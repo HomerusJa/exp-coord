@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "exp-coord"
+version = "0.1.0"
+description = "This is a experiment coordinator for my plant-growth-project."
+authors = ["Jakob Schluse <jakob@schluse.com>"]
+license = "CC BY-NC 4.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+APScheduler = "^3.10.4"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.4"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
