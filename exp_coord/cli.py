@@ -13,7 +13,12 @@ click_log.basic_config(logger)
 __all__ = ["cli"]
 
 
-@click.command()
-@click_log.simple_verbosity_option(logger)
+@click.group()
+@click_log.simple_verbosity_option(logger, "-v", "--verbosity")
 def cli():
-    logger.warning("TEST")
+    logger.info("Starting the program")
+
+
+@cli.command()
+def run():
+    logger.info("Running the program")
