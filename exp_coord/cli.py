@@ -15,7 +15,7 @@ __all__ = ["cli"]
 
 @click.group()
 @click_log.simple_verbosity_option(logger, "-v", "--verbosity")
-def cli():
+def cli() -> None:
     logger.info("Starting the program")
 
 
