@@ -1,4 +1,6 @@
-# Official .gitignore for Python. It can be found at 
+config.json
+
+# Official .gitignore for Python. It can be found at
 # https://github.com/github/gitignore/blob/main/Python.gitignore
 
 # Byte-compiled / optimized / DLL files
