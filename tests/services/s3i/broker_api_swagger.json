@@ -1,0 +1,904 @@
+{
+  "openapi" : "3.0.0",
+  "info" : {
+    "version" : "1.0.0",
+    "title" : "S3I Broker REST API",
+    "description" : "A REST API for sending and receiving messages with S3I Broker.",
+    "contact" : {
+      "name" : "KWH Team",
+      "url" : "https://git.rwth-aachen.de/kwh40/s3i",
+      "email" : "s3i@kwh40.de"
+    },
+    "license" : {
+      "name" : "GNU Lesser General Public License v3.0",
+      "url" : "https://choosealicense.com/licenses/lgpl-3.0/"
+    }
+  },
+  "servers" : [ {
+    "url" : "/",
+    "description" : "local Broker REST API"
+  }],
+  "components" : {
+    "examples" : {
+      "UserMessageExample" : {
+        "value" : {
+          "sender" : "s3i:2aafd97c-ff05-42b6-8e4d-e492330ec959",
+          "identifier" : "s3i:1385e09e-3e93-4c2f-92d3-345698c40407",
+          "receivers" : [ "s3i:6f58e045-fd30-496d-b519-a0b966f1ab01" ],
+          "messageType" : "userMessage",
+          "replyToEndpoint" : "s3ib://s3i:2aafd97c-ff05-42b6-8e4d-e492330ec959",
+          "attachments" : [ {
+            "filename" : "demo1.jpg",
+            "data" : "BASE64-encoded data"
+          }, {
+            "filename" : "demo2.jpg",
+            "data" : "BASE64-encoded data"
+          } ],
+          "subject" : "subject of message",
+          "text" : "Dear Mr. Example, ..."
+        }
+      },
+      "ServiceRequestExample" : {
+        "value" : {
+          "sender" : "s3i:6f58e045-fd30-496d-b519-a0b966f1ab01",
+          "identifier" : "s3i:08938da3-a2aa-47be-810c-9e6ee97e7fdb",
+          "receivers" : [ "s3i:ab0717b0-e025-4344-8598-bcca1d3d5d47" ],
+          "messageType" : "serviceRequest",
+          "replyToEndpoint" : "s3ib://s3i:6f58e045-fd30-496d-b519-a0b966f1ab01",
+          "serviceType" : "calculateStock",
+          "parameters" : {
+            "surface" : "..."
+          }
+        }
+      },
+      "ServiceReplyExample" : {
+        "value" : {
+          "sender" : "s3i:ab0717b0-e025-4344-8598-bcca1d3d5d47",
+          "identifier" : "s3i:f13ef9dd-68d8-43c9-b920-99c943c42089",
+          "receivers" : [ "s3i:6f58e045-fd30-496d-b519-a0b966f1ab01" ],
+          "messageType" : "serviceReply",
+          "serviceType" : "calculateStock",
+          "replyingToMessage" : "s3i:08938da3-a2aa-47be-810c-9e6ee97e7fdb",
+          "results" : {
+            "stock" : 123.4
+          }
+        }
+      },
+      "GetValueRequestExample" : {
+        "value" : {
+          "sender" : "s3i:2073c475-fee5-463d-bce1-f702bb06f899",
+          "identifier" : "s3i:147ecc53-4f5e-4270-9672-0174a017be7b",
+          "receivers" : [ "s3i:ef39a0ae-1f4a-4393-9508-ad70a4d38a63" ],
+          "messageType" : "getValueRequest",
+          "replyToEndpoint" : "s3ib://...",
+          "attributePath" : "engine/rpm"
+        }
+      },
+      "GetValueReplyExample" : {
+        "value" : {
+          "sender" : "s3i:ef39a0ae-1f4a-4393-9508-ad70a4d38a63",
+          "identifier" : "s3i:e89a4538-19fd-4675-8e55-9a7e59885c85",
+          "receivers" : [ "s3i:2073c475-fee5-463d-bce1-f702bb06f899" ],
+          "messageType" : "getValueReply",
+          "replyingToMessage" : "s3i:147ecc53-4f5e-4270-9672-0174a017be7b",
+          "value" : 123
+        }
+      },
+      "SetValueRequestExample" : {
+        "value" : {
+          "sender" : "s3i:2073c475-fee5-463d-bce1-f702bb06f899",
+          "identifier" : "s3i:147ecc53-4f5e-4270-9672-0174a017be7b",
+          "receivers" : [ "s3i:ef39a0ae-1f4a-4393-9508-ad70a4d38a63" ],
+          "messageType" : "setValueRequest",
+          "replyToEndpoint" : "s3ib://...",
+          "attributePath" : "engine/rpm",
+          "newValue" : 4000
+        }
+      },
+      "SetValueReplyExample" : {
+        "value" : {
+          "sender" : "s3i:ef39a0ae-1f4a-4393-9508-ad70a4d38a63",
+          "identifier" : "s3i:e89a4538-19fd-4675-8e55-9a7e59885c85",
+          "receivers" : [ "s3i:2073c475-fee5-463d-bce1-f702bb06f899" ],
+          "messageType" : "setValueReply",
+          "replyingToMessage" : "s3i:147ecc53-4f5e-4270-9672-0174a017be7b",
+          "ok" : true
+        }
+      },
+      "CreateAttributeRequestExample" : {
+        "value" : {
+          "sender" : "s3i:2073c475-fee5-463d-bce1-f702bb06f899",
+          "identifier" : "s3i:147ecc53-4f5e-4270-9672-0174a017be7b",
+          "receivers" : [ "s3i:ef39a0ae-1f4a-4393-9508-ad70a4d38a63" ],
+          "messageType" : "createAttributeRequest",
+          "replyToEndpoint" : "s3ib://...",
+          "attributePath" : "engine/name",
+          "newValue" : "my engine"
+        }
+      },
+      "CreateAttributeReplyExample" : {
+        "value" : {
+          "sender" : "s3i:ef39a0ae-1f4a-4393-9508-ad70a4d38a63",
+          "identifier" : "s3i:e89a4538-19fd-4675-8e55-9a7e59885c85",
+          "receivers" : [ "s3i:2073c475-fee5-463d-bce1-f702bb06f899" ],
+          "messageType" : "createAttributeReply",
+          "replyingToMessage" : "s3i:147ecc53-4f5e-4270-9672-0174a017be7b",
+          "ok" : true
+        }
+      },
+      "DeleteAttributeRequestExample" : {
+        "value" : {
+          "sender" : "s3i:2073c475-fee5-463d-bce1-f702bb06f899",
+          "identifier" : "s3i:147ecc53-4f5e-4270-9672-0174a017be7b",
+          "receivers" : [ "s3i:ef39a0ae-1f4a-4393-9508-ad70a4d38a63" ],
+          "messageType" : "deleteAttributeRequest",
+          "replyToEndpoint" : "s3ib://...",
+          "attributePath" : "engine/name"
+        }
+      },
+      "DeleteAttributeReplyExample" : {
+        "value" : {
+          "sender" : "s3i:ef39a0ae-1f4a-4393-9508-ad70a4d38a63",
+          "identifier" : "s3i:e89a4538-19fd-4675-8e55-9a7e59885c85",
+          "receivers" : [ "s3i:2073c475-fee5-463d-bce1-f702bb06f899" ],
+          "messageType" : "deleteAttributeReply",
+          "replyingToMessage" : "s3i:147ecc53-4f5e-4270-9672-0174a017be7b",
+          "ok" : true
+        }
+      }
+    },
+    "securitySchemes" : {
+      "bearerAuth" : {
+        "type" : "http",
+        "scheme" : "bearer",
+        "bearerFormat" : "JWT",
+        "description" : "Access token obtained from S3I IdentityProvider"
+      },
+      "OAuth2" : {
+        "type" : "oauth2",
+        "flows" : {
+          "password" : {
+            "tokenUrl" : "https://idp.s3i.vswf.dev/auth/realms/KWH/protocol/openid-connect/token"
+          }
+        }
+      }
+    },
+    "requestBodies" : {
+      "SendMessageRequestBody" : {
+        "description" : "A request body including an S3I-B message must be provided. To send an unencrypted message, an application/json header is needed. Otherwise, an application/pgp-encrypted header must be selected.",
+        "required" : true,
+        "content" : {
+          "application/json" : {
+            "schema" : {
+              "oneOf" : [ {
+                "$ref" : "#/components/schemas/UserMessageBody"
+              }, {
+                "$ref" : "#/components/schemas/ServiceRequestBody"
+              }, {
+                "$ref" : "#/components/schemas/ServiceReplyBody"
+              }, {
+                "$ref" : "#/components/schemas/GetValueRequestBody"
+              }, {
+                "$ref" : "#/components/schemas/GetValueReplyBody"
+              }, {
+                "$ref" : "#/components/schemas/SetValueRequestBody"
+              }, {
+                "$ref" : "#/components/schemas/SetValueReplyBody"
+              }, {
+                "$ref" : "#/components/schemas/CreateAttributeRequestBody"
+              }, {
+                "$ref" : "#/components/schemas/CreateAttributeReplyBody"
+              }, {
+                "$ref" : "#/components/schemas/DeleteAttributeRequestBody"
+              }, {
+                "$ref" : "#/components/schemas/DeleteAttributeReplyBody"
+              } ]
+            },
+            "examples" : {
+              "UserMessage" : {
+                "$ref" : "#/components/examples/UserMessageExample"
+              },
+              "ServiceRequest" : {
+                "$ref" : "#/components/examples/ServiceRequestExample"
+              },
+              "ServiceReply" : {
+                "$ref" : "#/components/examples/ServiceReplyExample"
+              },
+              "GetValueRequest" : {
+                "$ref" : "#/components/examples/GetValueRequestExample"
+              },
+              "GetValueReply" : {
+                "$ref" : "#/components/examples/GetValueReplyExample"
+              },
+              "SetValueRequest" : {
+                "$ref" : "#/components/examples/SetValueRequestExample"
+              },
+              "SetValueReply" : {
+                "$ref" : "#/components/examples/SetValueReplyExample"
+              },
+              "CreateAttributeRequest" : {
+                "$ref" : "#/components/examples/CreateAttributeRequestExample"
+              },
+              "CreateAttributeReply" : {
+                "$ref" : "#/components/examples/CreateAttributeReplyExample"
+              },
+              "DeleteAttributeRequest" : {
+                "$ref" : "#/components/examples/DeleteAttributeRequestExample"
+              },
+              "DeleteAttributeReply" : {
+                "$ref" : "#/components/examples/DeleteAttributeReplyExample"
+              }
+            }
+          },
+          "application/pgp-encrypted" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/EncryptedMessageBody"
+            },
+            "example" : "-----BEGIN PGP MESSAGE----- yMAaAZWPu07DMBSGeRCGbl44qhNfmpO9I1s3xMU+Pi5GbRrFDqJCTLwYOy9F0iAx sx39Ot9/+f76HK8enq4f30XmLvAg2pXIKrW1czHghiBGaUDX3kLDOgBrrJWSTGhQ 3KxECtyVFNMfaTeN9BQsaCIF2mMDKJUCikYHQ06RizM5MHF65SFP4N1CRtOw1AZi UBI02gDeVAhOerQ2Vs7LStxP6JFzdnvenXueU8fMw+0iLcb94bw7bbvQn1JXfnv5 dr3+zzBXiqPn47TuUnCOzaN/YboYzh+F35b74wc= =BFFz  -----END PGP MESSAGE-----"
+          }
+        }
+      }
+    },
+    "responses" : {
+      "SendMessageResponse" : {
+        "description" : "Message was sent",
+        "content" : {
+          "application/json" : {
+            "schema" : {
+              "type" : "array",
+              "items" : {
+                "type" : "object",
+                "properties" : {
+                  "endpoint" : {
+                    "type" : "string",
+                    "description" : "endpoint"
+                  },
+                  "status" : {
+                    "type" : "string",
+                    "description" : "status of sending message"
+                  },
+                  "error" : {
+                    "type" : "string",
+                    "description" : "error content, appears only if sending failed"
+                  }
+                }
+              }
+            },
+            "example" : [ {
+              "endpoint" : "s3ib://s3i:075f419f-f829-4198-b987-8e3afb8c53ad",
+              "status" : "Sending message succeeded"
+            }, {
+              "endpoint" : "s3ibs://s3i:2073c475-fee5-463d-bce1-f702bb06f899",
+              "status" : "Sending message failed",
+              "error" : "Endpoint s3ibs://s3i:2073c475-fee5-463d-bce1-f702bb06f899 not found"
+            } ]
+          }
+        }
+      },
+      "ReceiveMessageResponse" : {
+        "description" : "Message was received successfully",
+        "content" : {
+          "application/json" : {
+            "schema" : {
+              "oneOf" : [ {
+                "$ref" : "#/components/schemas/UserMessageBody"
+              }, {
+                "$ref" : "#/components/schemas/ServiceRequestBody"
+              }, {
+                "$ref" : "#/components/schemas/ServiceReplyBody"
+              }, {
+                "$ref" : "#/components/schemas/GetValueRequestBody"
+              }, {
+                "$ref" : "#/components/schemas/GetValueReplyBody"
+              }, {
+                "$ref" : "#/components/schemas/SetValueRequestBody"
+              }, {
+                "$ref" : "#/components/schemas/SetValueReplyBody"
+              }, {
+                "$ref" : "#/components/schemas/CreateAttributeRequestBody"
+              }, {
+                "$ref" : "#/components/schemas/CreateAttributeReplyBody"
+              }, {
+                "$ref" : "#/components/schemas/DeleteAttributeRequestBody"
+              }, {
+                "$ref" : "#/components/schemas/DeleteAttributeReplyBody"
+              } ]
+            },
+            "example" : "see S3I-B message schema"
+          },
+          "application/pgp-encrypted" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/EncryptedMessageBody"
+            },
+            "example" : "-----BEGIN PGP MESSAGE----- yMAaAZWPu07DMBSGeRCGbl44qhNfmpO9I1s3xMU+Pi5GbRrFDqJCTLwYOy9F0iAx sx39Ot9/+f76HK8enq4f30XmLvAg2pXIKrW1czHghiBGaUDX3kLDOgBrrJWSTGhQ 3KxECtyVFNMfaTeN9BQsaCIF2mMDKJUCikYHQ06RizM5MHF65SFP4N1CRtOw1AZi UBI02gDeVAhOerQ2Vs7LStxP6JFzdnvenXueU8fMw+0iLcb94bw7bbvQn1JXfnv5 dr3+zzBXiqPn47TuUnCOzaN/YboYzh+F35b74wc= =BFFz  -----END PGP MESSAGE-----"
+          }
+        }
+      },
+      "ReceiveMessagesResponse" : {
+        "description" : "Messages were received successfully",
+        "content" : {
+          "application/json" : {
+            "schema" : {
+              "type": "array",
+              "items": {
+                "oneOf" : [ {
+                  "$ref" : "#/components/schemas/UserMessageBody"
+                }, {
+                  "$ref" : "#/components/schemas/ServiceRequestBody"
+                }, {
+                  "$ref" : "#/components/schemas/ServiceReplyBody"
+                }, {
+                  "$ref" : "#/components/schemas/GetValueRequestBody"
+                }, {
+                  "$ref" : "#/components/schemas/GetValueReplyBody"
+                }, {
+                  "$ref" : "#/components/schemas/SetValueRequestBody"
+                }, {
+                  "$ref" : "#/components/schemas/SetValueReplyBody"
+                }, {
+                  "$ref" : "#/components/schemas/CreateAttributeRequestBody"
+                }, {
+                  "$ref" : "#/components/schemas/CreateAttributeReplyBody"
+                }, {
+                  "$ref" : "#/components/schemas/DeleteAttributeRequestBody"
+                }, {
+                  "$ref" : "#/components/schemas/DeleteAttributeReplyBody"
+                } ]
+              }
+            }
+          },
+          "application/pgp-encrypted" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/EncryptedMessageBody"
+            },
+            "example" : "-----BEGIN PGP MESSAGE----- yMAaAZWPu07DMBSGeRCGbl44qhNfmpO9I1s3xMU+Pi5GbRrFDqJCTLwYOy9F0iAx sx39Ot9/+f76HK8enq4f30XmLvAg2pXIKrW1czHghiBGaUDX3kLDOgBrrJWSTGhQ 3KxECtyVFNMfaTeN9BQsaCIF2mMDKJUCikYHQ06RizM5MHF65SFP4N1CRtOw1AZi UBI02gDeVAhOerQ2Vs7LStxP6JFzdnvenXueU8fMw+0iLcb94bw7bbvQn1JXfnv5 dr3+zzBXiqPn47TuUnCOzaN/YboYzh+F35b74wc= =BFFz  -----END PGP MESSAGE-----"
+          }
+        }
+      },
+      "UnauthorizedError" : {
+        "description" : "Access token is missing or invalid.",
+        "content" : {
+          "application/json" : {
+            "schema" : {
+              "type" : "object",
+              "properties" : {
+                "error" : {
+                  "type" : "string",
+                  "description" : "error content"
+                }
+              }
+            },
+            "example" : {
+              "error" : "Authorization header failed"
+            }
+          }
+        }
+      },
+      "UnauthenticatedBrokerError" : {
+        "description" : "Authentication with given access token failed, because user is not allowed to connect with the given endpoint at S3I Broker.",
+        "content" : {
+          "application/json" : {
+            "schema" : {
+              "type" : "object",
+              "properties" : {
+                "error" : {
+                  "type" : "string",
+                  "description" : "error content"
+                }
+              }
+            },
+            "example" : {
+              "error" : "Broker authentication failed, connection closed"
+            }
+          }
+        }
+      },
+      "SendBadRequestError" : {
+        "description" : "The given request is invalid. More information can be found in error content.",
+        "content" : {
+          "application/json" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/ErrorSchema"
+            },
+            "examples" : {
+              "InvalidMessageError" : {
+                "value" : {
+                  "error" : "Message is no valid JSON"
+                }
+              },
+              "InvalidEndpointError" : {
+                "value" : {
+                  "error" : "s3ib://s3i... is no endpoint of any receiver within message"
+                }
+              },
+              "InvalidHeaderEndpointMapError" : {
+                "value" : {
+                  "error" : "message with a PGP-encrypted header can not be sent to s3ib://..."
+                }
+              },
+              "InvalidHeaderError" : {
+                "value" : {
+                  "error" : "Content-Type of header failed"
+                }
+              }
+            }
+          }
+        }
+      },
+      "ReceiveBadRequestError" : {
+        "description" : "The given request is invalid. More information can be found in error content.",
+        "content" : {
+          "application/json" : {
+            "schema" : {
+              "$ref" : "#/components/schemas/ErrorSchema"
+            },
+            "examples" : {
+              "ListenOnMoreEndpointsError" : {
+                "value" : {
+                  "error" : "you can only listen to one endpoint"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "schemas" : {
+      "ErrorSchema" : {
+        "type" : "object",
+        "properties" : {
+          "error" : {
+            "type" : "string",
+            "description" : "error content"
+          }
+        }
+      },
+      "EncryptedMessageBody" : {
+        "description" : "an encrypted S3I-B message",
+        "type" : "string"
+      },
+      "UserMessageBody" : {
+        "description" : "S3I-B user message",
+        "type" : "object",
+        "properties" : {
+          "sender" : {
+            "type" : "string"
+          },
+          "identifier" : {
+            "type" : "string"
+          },
+          "receivers" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "messageType" : {
+            "type" : "string"
+          },
+          "replyToEndpoint" : {
+            "type" : "string"
+          },
+          "attachments" : {
+            "type" : "array",
+            "items" : {
+              "type" : "object",
+              "properties" : {
+                "filename" : {
+                  "type" : "string"
+                },
+                "data" : {
+                  "type" : "string"
+                }
+              }
+            }
+          },
+          "subject" : {
+            "type" : "string"
+          },
+          "text" : {
+            "type" : "string"
+          }
+        }
+      },
+      "ServiceRequestBody" : {
+        "description" : "S3I-B service request",
+        "type" : "object",
+        "properties" : {
+          "sender" : {
+            "type" : "string"
+          },
+          "identifier" : {
+            "type" : "string"
+          },
+          "receivers" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "messageType" : {
+            "type" : "string"
+          },
+          "replyToEndpoint" : {
+            "type" : "string"
+          },
+          "serviceType" : {
+            "type" : "string"
+          },
+          "parameters" : {
+            "type" : "object"
+          }
+        }
+      },
+      "ServiceReplyBody" : {
+        "description" : "S3I-B service reply",
+        "type" : "object",
+        "properties" : {
+          "sender" : {
+            "type" : "string"
+          },
+          "identifier" : {
+            "type" : "string"
+          },
+          "receivers" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "messageType" : {
+            "type" : "string"
+          },
+          "serviceType" : {
+            "type" : "string"
+          },
+          "replyingToMessage" : {
+            "type" : "string"
+          },
+          "result" : {
+            "type" : "string"
+          }
+        }
+      },
+      "GetValueRequestBody" : {
+        "description" : "S3I-B get value request",
+        "type" : "object",
+        "properties" : {
+          "sender" : {
+            "type" : "string"
+          },
+          "identifier" : {
+            "type" : "string"
+          },
+          "receivers" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "messageType" : {
+            "type" : "string"
+          },
+          "replyToEndpoint" : {
+            "type" : "string"
+          },
+          "attributePath" : {
+            "type" : "string"
+          }
+        }
+      },
+      "GetValueReplyBody" : {
+        "description" : "S3I-B get value reply",
+        "type" : "object",
+        "properties" : {
+          "sender" : {
+            "type" : "string"
+          },
+          "identifier" : {
+            "type" : "string"
+          },
+          "receivers" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "messageType" : {
+            "type" : "string"
+          },
+          "replyingToMessage" : {
+            "type" : "string"
+          },
+          "value" : {
+            "type" : "string"
+          }
+        }
+      },
+      "SetValueRequestBody" : {
+        "description" : "S3I-B set value request",
+        "type" : "object",
+        "properties" : {
+          "sender" : {
+            "type" : "string"
+          },
+          "identifier" : {
+            "type" : "string"
+          },
+          "receivers" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "messageType" : {
+            "type" : "string"
+          },
+          "replyToEndpoint" : {
+            "type" : "string"
+          },
+          "attributePath" : {
+            "type" : "string"
+          },
+          "newValue" : {
+            "type" : "string"
+          }
+        }
+      },
+      "SetValueReplyBody" : {
+        "description" : "S3I-B set value request",
+        "type" : "object",
+        "properties" : {
+          "sender" : {
+            "type" : "string"
+          },
+          "identifier" : {
+            "type" : "string"
+          },
+          "receivers" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "messageType" : {
+            "type" : "string"
+          },
+          "replyingToMessage" : {
+            "type" : "string"
+          }
+        }
+      },
+      "CreateAttributeRequestBody" : {
+        "description" : "S3I-B create attribute request",
+        "type" : "object",
+        "properties" : {
+          "sender" : {
+            "type" : "string"
+          },
+          "identifier" : {
+            "type" : "string"
+          },
+          "receivers" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "messageType" : {
+            "type" : "string"
+          },
+          "replyToEndpoint" : {
+            "type" : "string"
+          },
+          "attributePath" : {
+            "type" : "string"
+          },
+          "newValue" : {
+            "type" : "string"
+          }
+        }
+      },
+      "CreateAttributeReplyBody" : {
+        "description" : "S3I-B create attribute reply",
+        "type" : "object",
+        "properties" : {
+          "sender" : {
+            "type" : "string"
+          },
+          "identifier" : {
+            "type" : "string"
+          },
+          "receivers" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "messageType" : {
+            "type" : "string"
+          },
+          "replyingToMessage" : {
+            "type" : "string"
+          },
+          "ok" : {
+            "type" : "boolean"
+          }
+        }
+      },
+      "DeleteAttributeRequestBody" : {
+        "description" : "S3I-B delete attribute request",
+        "type" : "object",
+        "properties" : {
+          "sender" : {
+            "type" : "string"
+          },
+          "identifier" : {
+            "type" : "string"
+          },
+          "receivers" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "messageType" : {
+            "type" : "string"
+          },
+          "replyToEndpoint" : {
+            "type" : "string"
+          },
+          "attributePath" : {
+            "type" : "string"
+          }
+        }
+      },
+      "DeleteAttributeReplyBody" : {
+        "description" : "S3I-B delete attribute reply",
+        "type" : "object",
+        "properties" : {
+          "sender" : {
+            "type" : "string"
+          },
+          "identifier" : {
+            "type" : "string"
+          },
+          "receivers" : {
+            "type" : "array",
+            "items" : {
+              "type" : "string"
+            }
+          },
+          "messageType" : {
+            "type" : "string"
+          },
+          "replyingToMessage" : {
+            "type" : "string"
+          },
+          "ok" : {
+            "type" : "boolean"
+          }
+        }
+      }
+    }
+  },
+  "paths" : {
+    "/{endpoints}" : {
+      "post" : {
+        "summary" : "Send S3I-B messages",
+        "description" : "This REST API is used to send S3I-B messages (encrypted or not) to a one or more S3I Broker endpoints.",
+        "tags" : [ "Broker" ],
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "OAuth2" : [ ]
+        } ],
+        "parameters" : [ {
+          "name" : "endpoints",
+          "in" : "path",
+          "description" : "Separate multiple endpoints by comma. For encrypted messages, \"s3ibs://\" endpoints must be provided.",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          },
+          "examples" : {
+            "endpoint" : {
+              "summary" : "Example of a single endpoint",
+              "value" : "s3ib://s3i:075f419f-f829-4198-b987-8e3afb8c53ad"
+            },
+            "endpoints" : {
+              "summary" : "Example of multiple endpoints",
+              "value" : "s3ib://s3i:075f419f-f829-4198-b987-8e3afb8c53ad,s3ib://s3i:2073c475-fee5-463d-bce1-f702bb06f899"
+            }
+          }
+        } ],
+        "requestBody" : {
+          "$ref" : "#/components/requestBodies/SendMessageRequestBody"
+        },
+        "responses" : {
+          "201" : {
+            "$ref" : "#/components/responses/SendMessageResponse"
+          },
+          "403" : {
+            "$ref" : "#/components/responses/UnauthenticatedBrokerError"
+          },
+          "404" : {
+            "$ref" : "#/components/responses/SendBadRequestError"
+          }
+        }
+      }
+    },
+    "/{endpoint}" : {
+      "get" : {
+        "summary" : "Receive S3I-B messages",
+        "description" : "This REST API is used to fetch S3I-B messages from S3I Broker.",
+        "tags" : [ "Broker" ],
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "OAuth2" : [ ]
+        } ],
+        "parameters" : [ {
+          "name" : "endpoint",
+          "in" : "path",
+          "description" : "An endpoint must be provided in the request. It can only be a single endpoint.",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "s3ib://s3i:075f419f-f829-4198-b987-8e3afb8c53ad"
+        } ],
+        "responses" : {
+          "200" : {
+            "$ref" : "#/components/responses/ReceiveMessageResponse"
+          },
+          "401" : {
+            "$ref" : "#/components/responses/UnauthorizedError"
+          },
+          "403" : {
+            "$ref" : "#/components/responses/UnauthenticatedBrokerError"
+          },
+          "404" : {
+            "$ref" : "#/components/responses/ReceiveBadRequestError"
+          }
+        }
+      }
+    },
+    "/{endpoint}/all" : {
+      "get" : {
+        "summary" : "Receive all S3I-B messages",
+        "description" : "This REST API is used to fetch all S3I-B messages from S3I Broker.",
+        "tags" : [ "Broker" ],
+        "security" : [ {
+          "bearerAuth" : [ ]
+        }, {
+          "OAuth2" : [ ]
+        } ],
+        "parameters" : [ {
+          "name" : "endpoint",
+          "in" : "path",
+          "description" : "An endpoint must be provided in the request. It can only be a single endpoint.",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          },
+          "example" : "s3ib://s3i:075f419f-f829-4198-b987-8e3afb8c53ad"
+        } ],
+        "responses" : {
+          "200" : {
+            "$ref" : "#/components/responses/ReceiveMessagesResponse"
+          },
+          "401" : {
+            "$ref" : "#/components/responses/UnauthorizedError"
+          },
+          "403" : {
+            "$ref" : "#/components/responses/UnauthenticatedBrokerError"
+          },
+          "404" : {
+            "$ref" : "#/components/responses/ReceiveBadRequestError"
+          }
+        }
+      }
+    }
+  }
+}

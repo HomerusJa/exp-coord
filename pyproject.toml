@@ -1,0 +1,87 @@
+[build-system]
+build-backend = "pdm.backend"
+
+requires = [ "pdm-backend" ]
+
+[project]
+name = "exp-coord"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+  { name = "HomerusJa", email = "jakob@schluse.com" },
+]
+requires-python = ">=3.13"
+classifiers = [ "Programming Language :: Python :: 3 :: Only", "Programming Language :: Python :: 3.13" ]
+dependencies = [
+  "beanie>=1.29.0",
+  "httpx>=0.28.1",
+  "loguru>=0.7.3",
+  "meatie>=0.1.18",
+  "pydantic>=2.10.4",
+  "pydantic-settings>=2.7.1",
+]
+
+scripts.exp-coord = "exp_coord:main"
+
+[dependency-groups]
+dev = [
+  "logot>=1.3.0",
+  "pre-commit>=4.0.1",
+  "pytest>=8.3.4",
+  "pytest-asyncio>=0.25.2",
+  "pytest-cov>=6.0.0",
+  "pytest-sugar>=1.0.0",
+]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = """
+    --cov=exp_coord
+    --cov-report=term-missing
+    --cov-report=xml:coverage.xml
+    --cov-report=html:htmlcov
+    --cov-branch
+    --no-cov-on-fail
+    -v
+    --durations=10
+    --color=yes
+"""
+testpaths = [ "tests" ]
+pythonpath = [ "src" ]
+filterwarnings = [
+  "error",
+  "ignore::DeprecationWarning",
+  "ignore::UserWarning",
+]
+markers = [
+  "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+  "integration: marks tests as integration tests",
+]
+
+logot_capturer = "logot.loguru.LoguruCapturer"
+
+[tool.coverage.run]
+branch = true
+source = [ "src/exp_coord" ]
+omit = [
+  "tests/*",
+  "**/__init__.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+  "pragma: no cover",
+  "def __repr__",
+  "if self.debug:",
+  "raise NotImplementedError",
+  "if __name__ == .__main__.:",
+  "pass",
+  "raise ImportError",
+]
+#fail_under = 90
+show_missing = true
+sort = "Cover"
+
+[tool.coverage.html]
+directory = "htmlcov"
