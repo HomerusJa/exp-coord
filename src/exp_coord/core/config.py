@@ -6,13 +6,12 @@ import toml
 __all__ = ["settings", "Settings"]
 
 
-def find_config_file():
+def find_config_file() -> Path:
     path: Path = Path(__file__).parent.resolve()
     while path != Path("/") and not (path / "config.toml").exists():
         path = path.parent
     if path == Path("/"):
         raise FileNotFoundError("config.toml not found")
-    print(path / "config.toml")
     return path / "config.toml"
 
 

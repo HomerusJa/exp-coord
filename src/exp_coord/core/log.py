@@ -20,6 +20,10 @@ class InterceptHandler(logging.Handler):
         except ValueError:
             level = record.levelno
 
+        # If the issuer is httpcore or httpx and the level is DEBUG, set the level to TRACE.
+        if record.name.startswith("httpcore.") or record.name.startswith("httpx."):
+            level = "TRACE" if level == "DEBUG" or level == 10 else level
+
         # Find caller from where originated the logged message.
         frame, depth = inspect.currentframe(), 0
         while frame and (depth == 0 or frame.f_code.co_filename == logging.__file__):
@@ -37,3 +41,7 @@ def setup_logging():
     logger.remove()
     logger.add(sys.stderr, level="TRACE")
     # TODO: Add a file handler here if needed.
+
+
+# TODO: Remove this
+setup_logging()

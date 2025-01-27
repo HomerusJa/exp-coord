@@ -20,18 +20,27 @@ dependencies = [
   "meatie>=0.1.18",
   "pydantic>=2.10.4",
   "pydantic-settings>=2.7.1",
+  "respx>=0.22.0",
 ]
 
 scripts.exp-coord = "exp_coord:main"
 
 [dependency-groups]
 dev = [
-  "logot>=1.3.0",
   "pre-commit>=4.0.1",
+]
+test = [
+  "logot>=1.3.0",
   "pytest>=8.3.4",
   "pytest-asyncio>=0.25.2",
   "pytest-cov>=6.0.0",
+  "pytest-mock>=3.14.0",
   "pytest-sugar>=1.0.0",
+]
+lint = [
+  "mypy>=1.14.1",
+  "ruff>=0.9.1",
+  "types-toml>=0.10.8.20240310",
 ]
 
 [tool.pytest.ini_options]
@@ -85,3 +94,9 @@ sort = "Cover"
 
 [tool.coverage.html]
 directory = "htmlcov"
+
+[tool.mypy]
+plugins = [ "pydantic.mypy" ]
+
+[tool.uv]
+default-groups = [ "dev", "test", "lint" ]
