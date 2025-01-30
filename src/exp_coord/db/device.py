@@ -26,3 +26,4 @@ class Device(Document):
 
     class Settings:
         name = "devices"
+        validate_on_save = True

@@ -20,3 +20,4 @@ class Status(Document):
 
     class Settings:
         name = "statuses"
+        validate_on_save = True
