@@ -1,18 +1,18 @@
 from pydantic_settings import BaseSettings
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from pathlib import Path
 import toml
 
 __all__ = ["settings", "Settings"]
 
 
-def find_config_file() -> Path:
+def find_file(filename: str) -> Path:
     path: Path = Path(__file__).parent.resolve()
-    while path != Path("/") and not (path / "config.toml").exists():
+    while path != Path("/") and not (path / filename).exists():
         path = path.parent
     if path == Path("/"):
-        raise FileNotFoundError("config.toml not found")
-    return path / "config.toml"
+        raise FileNotFoundError(f"{filename} not found")
+    return path / filename
 
 
 class S3ISettings(BaseModel):
@@ -26,6 +26,11 @@ class S3ISettings(BaseModel):
 class MongoDBSettings(BaseModel):
     url: str
     db_name: str
+    x509_cert_file: Path
+
+    @field_validator("x509_cert_file", mode="after")
+    def validate_x509_cert_filename(cls, v):
+        return find_file(v)
 
 
 class Settings(BaseSettings):
@@ -34,7 +39,7 @@ class Settings(BaseSettings):
 
 
 def _get_settings():
-    path = find_config_file()
+    path = find_file("config.toml")
     with open(path, "r") as f:
         config = toml.load(f)
     return Settings.model_validate(config)

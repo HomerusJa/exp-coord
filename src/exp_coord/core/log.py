@@ -20,8 +20,11 @@ class InterceptHandler(logging.Handler):
         except ValueError:
             level = record.levelno
 
-        # If the issuer is httpcore or httpx and the level is DEBUG, set the level to TRACE.
-        if record.name.startswith("httpcore.") or record.name.startswith("httpx."):
+        if (
+            record.name.startswith("httpcore.")
+            or record.name.startswith("httpx.")
+            or record.name.startswith("pymongo.")
+        ):
             level = "TRACE" if level == "DEBUG" or level == 10 else level
 
         # Find caller from where originated the logged message.

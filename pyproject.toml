@@ -14,7 +14,7 @@ authors = [
 requires-python = ">=3.13"
 classifiers = [ "Programming Language :: Python :: 3 :: Only", "Programming Language :: Python :: 3.13" ]
 dependencies = [
-  "beanie>=1.29.0",
+  "beanie[srv]>=1.29.0",
   "httpx>=0.28.1",
   "loguru>=0.7.3",
   "meatie>=0.1.18",
@@ -96,6 +96,7 @@ sort = "Cover"
 directory = "htmlcov"
 
 [tool.mypy]
+
 plugins = [ "pydantic.mypy" ]
 
 [tool.uv]

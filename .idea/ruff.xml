@@ -2,6 +2,5 @@
 <project version="4">
   <component name="RuffConfigService">
     <option name="globalRuffExecutablePath" value="c:\users\jakob\.local\bin\ruff.exe" />
-    <option name="projectRuffExecutablePath" value="C:\Users\jakob\PycharmProjects\exp-coord-no-server\.venv\Scripts\ruff.exe" />
   </component>
 </project>
