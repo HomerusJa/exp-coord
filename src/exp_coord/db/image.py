@@ -1,35 +1,38 @@
 from datetime import datetime
 
-from beanie import Document, Link
+from beanie import Document, Link, BeanieObjectId
 
 from exp_coord.db.device import Device
 
 
 class Image(Document):
-    """An image taken by a camera device."""
+    """An image taken by a camera device. The images themselves should be stored in GridFS using the method below.
+
+    Storage in GridFS has to be done manually. Consider the following example:
+    ```python
+    from exp_coord.db.image import Image
+    from exp_coord.db.gridfs import ImageFileMetadata, upload_to_gridfs
+
+    filename = await image.get_filename()
+    image = Image(device=..., taken_at=..., filename=filename)
+    metadata = ImageFileMetadata(from_id=image.id)
+    with aiofiles.open("path/to/image.jpg", "rb") as f:
+        file_id = upload_to_gridfs(filename, f, metadata)
+        image.file_id = file_id
+        await image.insert()
+    ```
+    """
 
     device: Link[Device]
     taken_at: datetime
 
-    # TODO: Add GridFS integration
+    file_id: BeanieObjectId | None = None
+
+    async def get_filename(self) -> str:
+        """Compute the filename of the image. This method has to be async because it fetches the device link."""
+        await self.fetch_link("device")
+        return f"{self.device.s3i_id}-{self.taken_at.isoformat()}.jpg"
 
     class Settings:
         name = "images"
         validate_on_save = True
-
-
-# async def upload_image(image_model: Image, image_data: Any) -> BeanieObjectId:
-#     """Upload an image to the database."""
-#     filename = f"{image_model.device.s3i_id}_{image_model.taken_at}.jpg"
-#
-#     fs = get_grid_fs_client()
-#     return await fs.upload_from_stream(
-#         filename,
-#         image_data,
-#         metadata={
-#             "device_s3i_id": image_model.device.s3i_id,
-#             "taken_at": image_model.taken_at,
-#         },
-#     )
-#
-# async def download_image(image_model: Image) -> StreamTypeNotExistent: ...
