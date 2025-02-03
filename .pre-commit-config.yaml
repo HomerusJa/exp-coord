@@ -25,3 +25,8 @@ repos:
     hooks:
       - id: uv-lock
       - id: uv-sync  # Is this necessary and/or wanted?
+
+  - repo: https://github.com/hukkin/mdformat
+    rev: 0.7.22
+    hooks:
+    - id: mdformat
