@@ -1,7 +1,8 @@
 from pathlib import Path
+from typing import Literal
 
 import toml
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 from pydantic_settings import BaseSettings
 
 __all__ = ["Settings", "settings"]
@@ -24,9 +25,17 @@ class S3ISettings(BaseModel):
     broker_url: str
 
 
-class MongoDBSettings(BaseModel):
+class MongoDBSettingsBase(BaseModel):
+    connection_type: Literal["x509", "username"]
     url: str
     db_name: str
+
+
+class MongoDBSettingsPassword(MongoDBSettingsBase):
+    connection_type: Literal["password"]
+
+
+class MongoDBSettingsX509(MongoDBSettingsBase):
     x509_cert_file: Path
 
     @field_validator("x509_cert_file", mode="after")
@@ -36,7 +45,7 @@ class MongoDBSettings(BaseModel):
 
 class Settings(BaseSettings):
     s3i: S3ISettings
-    mongodb: MongoDBSettings
+    mongodb: MongoDBSettingsPassword | MongoDBSettingsX509 = Field(discriminator="connection_type")
 
 
 def _get_settings():

@@ -24,7 +24,7 @@ class KeycloakAuth:
         password: str | None = None,
         token_refresh_margin: timedelta = timedelta(minutes=1),
     ) -> None:
-        self.token_url = f"{keycloak_url.rstrip("/")}/realms/{realm}/protocol/openid-connect/token"
+        self.token_url = f"{keycloak_url.rstrip('/')}/realms/{realm}/protocol/openid-connect/token"
 
         self.client_id = client_id
         self.client_secret = client_secret
