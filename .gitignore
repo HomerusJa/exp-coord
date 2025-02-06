@@ -17,3 +17,6 @@ htmlcov/
 # Project-specific files
 config.toml
 *.pem
+
+# Editor-specific files
+.idea/
