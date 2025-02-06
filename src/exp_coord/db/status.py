@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from beanie import Document, Link
+
 from .device import Device
 
 

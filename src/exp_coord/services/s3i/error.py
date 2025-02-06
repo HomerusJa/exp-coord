@@ -1,5 +1,5 @@
 from meatie import AsyncResponse, ResponseError
-from pydantic import ValidationError, BaseModel
+from pydantic import BaseModel, ValidationError
 
 
 class ErrorSchema(BaseModel):
@@ -11,9 +11,7 @@ class ErrorSchema(BaseModel):
 class S3IBrokerError(ResponseError):
     """S³I Broker error response."""
 
-    def __init__(
-        self, response: AsyncResponse, error_model: ErrorSchema | None = None
-    ) -> None:
+    def __init__(self, response: AsyncResponse, error_model: ErrorSchema | None = None) -> None:
         super().__init__(response)
         self.error = error_model.error if error_model else "Unknown error"
         self.status_code = response.status

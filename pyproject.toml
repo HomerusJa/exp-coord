@@ -23,13 +23,11 @@ dependencies = [
   "typer>=0.15.1",
 ]
 
-scripts.exp-coord = "exp_coord:main"
+scripts.exp-coord = "exp_coord.cli:app"
 
 [dependency-groups]
 dev = [
   "pre-commit>=4.0.1",
-  { include-group = "lint" },
-  { include-group = "test" },
 ]
 test = [
   "logot>=1.3.0",
@@ -41,10 +39,40 @@ test = [
   "respx>=0.22.0",
 ]
 lint = [
-  "mypy>=1.14.1",
   "ruff>=0.9.1",
   "types-toml>=0.10.8.20240310",
 ]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+exclude = [
+  ".pdm-build",
+  ".venv",
+  "htmlcov",
+]
+
+format.indent-style = "space"
+format.quote-style = "double"
+format.skip-magic-trailing-comma = false
+lint.select = [
+  "B",   # flake8-bugbear
+  "BLE", # flake8-blind-except
+  "C4",  # flake8-comprehensions
+  # "D",   # pydocstyle
+  "E",   # pycodestyle errors
+  "F",   # Pyflakes
+  "I",   # isort
+  "RUF", # Ruff-specific rules
+  "SIM", # flake8-simplify
+  "W",   # pycodestyle warnings
+]
+lint.ignore = [ "E501" ] # Handled by formatter
+lint.per-file-ignores."tests/**/*.py" = [ "S101" ] # Allow "assert" in tests
+
+lint.isort.known-first-party = [ "exp_coord" ]
+
+lint.pydocstyle.convention = "google"
 
 [tool.pytest.ini_options]
 minversion = "8.0"
@@ -99,7 +127,6 @@ sort = "Cover"
 directory = "htmlcov"
 
 [tool.mypy]
-
 plugins = [ "pydantic.mypy" ]
 
 [tool.uv]

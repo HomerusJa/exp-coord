@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from beanie import Document, Link, BeanieObjectId
+from beanie import BeanieObjectId, Document, Link
 
 from exp_coord.db.device import Device
 

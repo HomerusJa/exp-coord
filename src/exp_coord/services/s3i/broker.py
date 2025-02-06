@@ -1,22 +1,23 @@
+from typing import Annotated, Optional, Union, override
+
+import httpx
+from loguru import logger
 from meatie import (
+    AsyncResponse,
     Request,
-    endpoint,
-    private,
     api_ref,
     body,
-    AsyncResponse,
+    endpoint,
+    private,
 )
 from meatie_httpx import AsyncClient
-import httpx
-from typing import override, Annotated, Union, Optional
-from loguru import logger
 from pydantic import BaseModel, TypeAdapter
 
 from exp_coord.core.config import settings
 from exp_coord.core.utils import PydanticModel
 from exp_coord.services.s3i.auth import KeycloakAuth
-from exp_coord.services.s3i.message_models import S3IMessage, S3IEvent
 from exp_coord.services.s3i.error import get_error
+from exp_coord.services.s3i.message_models import S3IEvent, S3IMessage
 
 
 class S3IBrokerClient(AsyncClient):
@@ -63,9 +64,7 @@ class S3IBrokerClient(AsyncClient):
     async def get_message(self, endpoint: str) -> Optional[S3IMessage]:
         """Get a message from the broker."""
         response = await self._get_message(endpoint=endpoint)
-        return await self._process_single_response(
-            response, S3IMessage, endpoint, "message"
-        )
+        return await self._process_single_response(response, S3IMessage, endpoint, "message")
 
     @endpoint("/{endpoint}", private, body(error=get_error))
     async def _get_message(self, endpoint: str) -> AsyncResponse: ...
@@ -76,9 +75,7 @@ class S3IBrokerClient(AsyncClient):
     async def get_event(self, endpoint: str) -> Optional[S3IEvent]:
         """Get an event from the broker."""
         response = await self._get_event(endpoint=endpoint)
-        return await self._process_single_response(
-            response, S3IEvent, endpoint, "event"
-        )
+        return await self._process_single_response(response, S3IEvent, endpoint, "event")
 
     @endpoint("/{endpoint}/event", private, body(error=get_error))
     async def _get_event(self, endpoint: str) -> AsyncResponse: ...

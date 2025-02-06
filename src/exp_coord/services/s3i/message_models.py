@@ -1,7 +1,8 @@
-from typing import Annotated, Literal, Any, Union
+from typing import Annotated, Any, Literal, Union
+
 from pydantic import BaseModel, Field, TypeAdapter
 
-__all__ = ["S3IMessage", "S3IEvent"]
+__all__ = ["S3IEvent", "S3IMessage"]
 
 
 class S3IMessageBase(BaseModel):

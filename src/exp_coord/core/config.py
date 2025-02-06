@@ -1,9 +1,10 @@
-from pydantic_settings import BaseSettings
-from pydantic import BaseModel, field_validator
 from pathlib import Path
-import toml
 
-__all__ = ["settings", "Settings"]
+import toml
+from pydantic import BaseModel, field_validator
+from pydantic_settings import BaseSettings
+
+__all__ = ["Settings", "settings"]
 
 
 def find_file(filename: str) -> Path:

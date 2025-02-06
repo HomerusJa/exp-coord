@@ -1,13 +1,12 @@
-from exp_coord.core.annotations.s3i import (
-    _validate_s3i_event_queue,
-    _validate_s3i_id,
-    _validate_s3i_message_queue,
-    S3I_Queue,
-)
-
 import pytest
 from pydantic import TypeAdapter
 
+from exp_coord.core.annotations.s3i import (
+    S3I_Queue,
+    _validate_s3i_event_queue,
+    _validate_s3i_id,
+    _validate_s3i_message_queue,
+)
 
 VALID_IDS = [
     "s3i:ab1b96cb-2181-41c6-8aaa-8ad61b813198",

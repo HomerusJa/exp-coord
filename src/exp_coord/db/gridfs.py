@@ -1,5 +1,5 @@
 import datetime
-from typing import Literal, Any
+from typing import Any, Literal
 
 from beanie import BeanieObjectId
 from motor.motor_asyncio import AsyncIOMotorGridFSBucket
@@ -27,7 +27,7 @@ class GridFSFileMetadata(BaseModel):
         return self
 
     class Config:
-        json_encoders = {datetime.datetime: lambda dt: dt.isoformat()}
+        json_encoders = {datetime.datetime: lambda dt: dt.isoformat()}  # noqa: RUF012
 
 
 class ImageFileMetadata(GridFSFileMetadata):

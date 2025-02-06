@@ -1,8 +1,10 @@
-import pytest
-import httpx
 from datetime import datetime, timedelta, timezone
-from exp_coord.services.s3i.auth import KeycloakAuth, TokenData
+
+import httpx
+import pytest
 import pytest_asyncio
+
+from exp_coord.services.s3i.auth import KeycloakAuth, TokenData
 
 
 @pytest.fixture

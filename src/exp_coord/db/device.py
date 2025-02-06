@@ -3,7 +3,7 @@ from typing import Literal
 from beanie import Document
 from pydantic import model_validator
 
-from exp_coord.core.annotations.s3i import S3I_Id, S3I_Message_Queue, S3I_Event_Queue
+from exp_coord.core.annotations.s3i import S3I_Event_Queue, S3I_Id, S3I_Message_Queue
 
 
 class Device(Document):

@@ -1,19 +1,23 @@
 import typer
+from loguru import logger
+
 from exp_coord.core.log import setup_logging
+from exp_coord.db.connection import init_db
 
 app = typer.Typer(name="exp_coord")
 
 
-@app.command()
-def run():
-    typer.echo("Running once")
-
-
-@app.command()
-def run_forever():
-    typer.echo("Running forever")
-
-
-if __name__ == "__main__":
+@app.callback()
+def callback() -> None:
     setup_logging()
-    app()
+    init_db()
+
+
+@app.command()
+def run() -> None:
+    logger.info("Running once")
+
+
+@app.command()
+def run_forever() -> None:
+    logger.info("Running forever")

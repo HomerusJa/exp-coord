@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
+
 import httpx
 from loguru import logger
 
@@ -23,9 +24,7 @@ class KeycloakAuth:
         password: str | None = None,
         token_refresh_margin: timedelta = timedelta(minutes=1),
     ) -> None:
-        self.token_url = (
-            f"{keycloak_url.rstrip("/")}/realms/{realm}/protocol/openid-connect/token"
-        )
+        self.token_url = f"{keycloak_url.rstrip("/")}/realms/{realm}/protocol/openid-connect/token"
 
         self.client_id = client_id
         self.client_secret = client_secret
@@ -61,8 +60,7 @@ class KeycloakAuth:
         return TokenData(
             access_token=token_data["access_token"],
             refresh_token=token_data.get("refresh_token"),
-            expires_at=datetime.now(timezone.utc)
-            + timedelta(seconds=token_data["expires_in"]),
+            expires_at=datetime.now(timezone.utc) + timedelta(seconds=token_data["expires_in"]),
         )
 
     async def refresh_auth_token(self, refresh_token: str) -> TokenData:
@@ -83,8 +81,7 @@ class KeycloakAuth:
         return TokenData(
             access_token=token_data["access_token"],
             refresh_token=token_data.get("refresh_token"),
-            expires_at=datetime.now(timezone.utc)
-            + timedelta(seconds=token_data["expires_in"]),
+            expires_at=datetime.now(timezone.utc) + timedelta(seconds=token_data["expires_in"]),
         )
 
     def _is_token_valid(self, token: TokenData) -> bool:
@@ -97,9 +94,7 @@ class KeycloakAuth:
             logger.debug("Current token is invalid or expired.")
             try:
                 if self._token_data and self._token_data.refresh_token:
-                    self._token_data = await self.refresh_auth_token(
-                        self._token_data.refresh_token
-                    )
+                    self._token_data = await self.refresh_auth_token(self._token_data.refresh_token)
                 else:
                     self._token_data = await self.get_new_token()
             except httpx.HTTPError:

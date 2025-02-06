@@ -1,4 +1,5 @@
-from typing import TypeVar, Generic, Protocol
+from typing import Generic, Protocol, TypeVar
+
 from pydantic import TypeAdapter
 
 

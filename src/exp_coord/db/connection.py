@@ -1,10 +1,10 @@
 from beanie import init_beanie
+from loguru import logger
 from motor.motor_asyncio import (
     AsyncIOMotorClient,
-    AsyncIOMotorGridFSBucket,
     AsyncIOMotorDatabase,
+    AsyncIOMotorGridFSBucket,
 )
-from loguru import logger
 
 from exp_coord.core.config import settings
 
