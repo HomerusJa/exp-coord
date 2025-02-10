@@ -5,7 +5,7 @@ from typing import Iterable
 
 import pytest
 
-from exp_coord.services.s3i.message_models import S3IMessage
+from exp_coord.services.s3i.message_models import S3IMessageAdapter
 
 
 def get_broker_api_examples() -> Iterable[dict]:
@@ -18,4 +18,4 @@ def get_broker_api_examples() -> Iterable[dict]:
 def test_message_models(example: dict):
     """Test the message models against the broker API examples from the Swagger docs."""
     pprint(example)
-    S3IMessage.validate_python(example)
+    S3IMessageAdapter.validate_python(example)

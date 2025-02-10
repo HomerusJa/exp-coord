@@ -1,24 +1,8 @@
-from typing import Annotated, Any, Literal, Union
+from typing import Any, Literal, Union
 
-from pydantic import BaseModel, Field, TypeAdapter
+from pydantic import BaseModel, TypeAdapter
 
-__all__ = ["S3IEvent", "S3IMessage"]
-
-
-class S3IMessageBase(BaseModel):
-    """Base class for all S³I messages.
-
-    Attributes:
-        messageType (str): The type of message, defined by subclasses.
-        sender (str): Identifier of the sender.
-        identifier (str): Unique identifier for the message.
-        receivers (list[str]): List of message receivers.
-    """
-
-    messageType: str
-    sender: str
-    identifier: str
-    receivers: list[str]
+S3IMessageAdapter = None
 
 
 class Attachment(BaseModel):
@@ -33,41 +17,14 @@ class Attachment(BaseModel):
     data: str
 
 
-class ReplyableMessage(S3IMessageBase):
-    """Base class for messages that require a reply endpoint.
-
-    Attributes:
-        replyToEndpoint (str): Endpoint for message replies.
-    """
-
-    replyToEndpoint: str
-
-
-class ReplyMessage(S3IMessageBase):
-    """Base class for messages that reference a previous message.
-
-    Attributes:
-        replyingToMessage (str): Identifier of the referenced message.
-    """
-
-    replyingToMessage: str
-
-
-class AttributeMessage(ReplyableMessage):
-    """Base class for messages involving attribute paths.
-
-    Attributes:
-        attributePath (str): Path to the attribute.
-    """
-
-    attributePath: str
-
-
-class S3IUserMessage(S3IMessageBase):
+class S3IUserMessage(BaseModel):
     """S³I user message model.
 
     Attributes:
         messageType (Literal["userMessage"]): Type of the message.
+        sender (str): Identifier of the sender.
+        identifier (str): Unique identifier for the message.
+        receivers (list[str]): List of message receivers.
         replyToEndpoint (str): Reply endpoint.
         attachments (list[Attachment]): List of attachments.
         subject (str): Subject of the message.
@@ -75,150 +32,237 @@ class S3IUserMessage(S3IMessageBase):
     """
 
     messageType: Literal["userMessage"] = "userMessage"
+    sender: str
+    identifier: str
+    receivers: list[str]
     replyToEndpoint: str
     attachments: list[Attachment]
     subject: str
     text: str
 
 
-class S3IServiceRequest(ReplyableMessage):
+class S3IServiceRequest(BaseModel):
     """S³I service request model.
 
     Attributes:
         messageType (Literal["serviceRequest"]): Type of the message.
+        sender (str): Identifier of the sender.
+        identifier (str): Unique identifier for the message.
+        receivers (list[str]): List of message receivers.
+        replyToEndpoint (str): Reply endpoint for the service request.
         serviceType (str): Type of service requested.
         parameters (dict): Parameters for the service.
     """
 
     messageType: Literal["serviceRequest"] = "serviceRequest"
+    sender: str
+    identifier: str
+    receivers: list[str]
+    replyToEndpoint: str
     serviceType: str
     parameters: dict
 
 
-class S3IServiceReply(ReplyMessage):
+class S3IServiceReply(BaseModel):
     """S³I service reply model.
 
     Attributes:
         messageType (Literal["serviceReply"]): Type of the message.
+        sender (str): Identifier of the sender.
+        identifier (str): Unique identifier for the message.
+        receivers (list[str]): List of message receivers.
+        replyingToMessage (str): Identifier of the referenced message.
         serviceType (str): Type of service.
-        result (Any): Result of the service.
+        results (Any): Result of the service.
     """
 
     messageType: Literal["serviceReply"] = "serviceReply"
+    sender: str
+    identifier: str
+    receivers: list[str]
+    replyingToMessage: str
     serviceType: str
     results: Any
 
 
-class S3IGetValueRequest(AttributeMessage):
+class S3IGetValueRequest(BaseModel):
     """S³I get value request model.
 
     Attributes:
         messageType (Literal["getValueRequest"]): Type of the message.
+        sender (str): Identifier of the sender.
+        identifier (str): Unique identifier for the message.
+        receivers (list[str]): List of message receivers.
+        replyToEndpoint (str): Reply endpoint for the request.
+        attributePath (str): Path to the attribute.
     """
 
     messageType: Literal["getValueRequest"] = "getValueRequest"
+    sender: str
+    identifier: str
+    receivers: list[str]
+    replyToEndpoint: str
+    attributePath: str
 
 
-class S3IGetValueReply(ReplyMessage):
+class S3IGetValueReply(BaseModel):
     """S³I get value reply model.
 
     Attributes:
         messageType (Literal["getValueReply"]): Type of the message.
+        sender (str): Identifier of the sender.
+        identifier (str): Unique identifier for the message.
+        receivers (list[str]): List of message receivers.
+        replyingToMessage (str): Identifier of the referenced message.
         value (Any): Retrieved value.
     """
 
     messageType: Literal["getValueReply"] = "getValueReply"
+    sender: str
+    identifier: str
+    receivers: list[str]
+    replyingToMessage: str
     value: Any
 
 
-class S3ISetValueRequest(AttributeMessage):
+class S3ISetValueRequest(BaseModel):
     """S³I set value request model.
 
     Attributes:
         messageType (Literal["setValueRequest"]): Type of the message.
+        sender (str): Identifier of the sender.
+        identifier (str): Unique identifier for the message.
+        receivers (list[str]): List of message receivers.
+        replyToEndpoint (str): Reply endpoint for the request.
+        attributePath (str): Path to the attribute.
         newValue (Any): New value to set.
     """
 
     messageType: Literal["setValueRequest"] = "setValueRequest"
+    sender: str
+    identifier: str
+    receivers: list[str]
+    replyToEndpoint: str
+    attributePath: str
     newValue: Any
 
 
-class S3ISetValueReply(ReplyMessage):
+class S3ISetValueReply(BaseModel):
     """S³I set value reply model.
 
     Attributes:
         messageType (Literal["setValueReply"]): Type of the message.
+        sender (str): Identifier of the sender.
+        identifier (str): Unique identifier for the message.
+        receivers (list[str]): List of message receivers.
+        replyingToMessage (str): Identifier of the referenced message.
     """
 
     messageType: Literal["setValueReply"] = "setValueReply"
+    sender: str
+    identifier: str
+    receivers: list[str]
+    replyingToMessage: str
 
 
-class S3ICreateAttributeRequest(AttributeMessage):
+class S3ICreateAttributeRequest(BaseModel):
     """S³I create attribute request model.
 
     Attributes:
         messageType (Literal["createAttributeRequest"]): Type of the message.
+        sender (str): Identifier of the sender.
+        identifier (str): Unique identifier for the message.
+        receivers (list[str]): List of message receivers.
+        replyToEndpoint (str): Reply endpoint for the request.
+        attributePath (str): Path to the attribute.
         newValue (str): Value of the new attribute.
     """
 
     messageType: Literal["createAttributeRequest"] = "createAttributeRequest"
+    sender: str
+    identifier: str
+    receivers: list[str]
+    replyToEndpoint: str
+    attributePath: str
     newValue: str
 
 
-class S3ICreateAttributeReply(ReplyMessage):
+class S3ICreateAttributeReply(BaseModel):
     """S³I create attribute reply model.
 
     Attributes:
         messageType (Literal["createAttributeReply"]): Type of the message.
+        sender (str): Identifier of the sender.
+        identifier (str): Unique identifier for the message.
+        receivers (list[str]): List of message receivers.
         replyingToMessage (str): Identifier of the referenced message.
         ok (bool): Status of the operation.
     """
 
     messageType: Literal["createAttributeReply"] = "createAttributeReply"
+    sender: str
+    identifier: str
+    receivers: list[str]
     replyingToMessage: str
     ok: bool
 
 
-class S3IDeleteAttributeRequest(AttributeMessage):
+class S3IDeleteAttributeRequest(BaseModel):
     """S³I delete attribute request model.
 
     Attributes:
         messageType (Literal["deleteAttributeRequest"]): Type of the message.
+        sender (str): Identifier of the sender.
+        identifier (str): Unique identifier for the message.
+        receivers (list[str]): List of message receivers.
+        replyToEndpoint (str): Reply endpoint for the request.
+        attributePath (str): Path to the attribute.
     """
 
     messageType: Literal["deleteAttributeRequest"] = "deleteAttributeRequest"
+    sender: str
+    identifier: str
+    receivers: list[str]
+    replyToEndpoint: str
+    attributePath: str
 
 
-class S3IDeleteAttributeReply(ReplyMessage):
+class S3IDeleteAttributeReply(BaseModel):
     """S³I delete attribute reply model.
 
     Attributes:
         messageType (Literal["deleteAttributeReply"]): Type of the message.
+        sender (str): Identifier of the sender.
+        identifier (str): Unique identifier for the message.
+        receivers (list[str]): List of message receivers.
+        replyingToMessage (str): Identifier of the referenced message.
         ok (bool): Status of the operation.
     """
 
     messageType: Literal["deleteAttributeReply"] = "deleteAttributeReply"
+    sender: str
+    identifier: str
+    receivers: list[str]
+    replyingToMessage: str
     ok: bool
 
 
-S3IMessageTypes = Annotated[
-    Union[
-        S3IUserMessage,
-        S3IServiceRequest,
-        S3IServiceReply,
-        S3IGetValueRequest,
-        S3IGetValueReply,
-        S3ISetValueRequest,
-        S3ISetValueReply,
-        S3ICreateAttributeRequest,
-        S3ICreateAttributeReply,
-        S3IDeleteAttributeRequest,
-        S3IDeleteAttributeReply,
-    ],
-    Field(discriminator="messageType"),
+S3IMessageType = Union[
+    S3IUserMessage,
+    S3IServiceRequest,
+    S3IServiceReply,
+    S3IGetValueRequest,
+    S3IGetValueReply,
+    S3ISetValueRequest,
+    S3ISetValueReply,
+    S3ICreateAttributeRequest,
+    S3ICreateAttributeReply,
+    S3IDeleteAttributeRequest,
+    S3IDeleteAttributeReply,
 ]
 
-S3IMessage: TypeAdapter[S3IMessageTypes] = TypeAdapter(S3IMessageTypes)
+S3IMessageAdapter = TypeAdapter(S3IMessageType)
+MultipleS3IMessageAdapter = TypeAdapter(list[S3IMessageType])
 
 
 class S3IEvent(BaseModel):
@@ -230,7 +274,7 @@ class S3IEvent(BaseModel):
         timestamp (int): Unix timestamp of the event.
         topic (str): Topic associated with the event.
         messageType (Literal["event"]): Type of the message.
-        content (ContentType): Event content with a default type of dict.
+        content (Any): Event content.
     """
 
     sender: str
@@ -239,3 +283,8 @@ class S3IEvent(BaseModel):
     topic: str
     messageType: Literal["event"] = "event"
     content: Any
+
+
+# FIXME: I could totally just use S3IEvent directly, but I'm trying to be consistent
+S3IEventAdapter = TypeAdapter(S3IEvent)
+MultipleS3IEventAdapter = TypeAdapter(list[S3IEvent])

@@ -1,3 +1,4 @@
+import typing
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
@@ -12,7 +13,7 @@ class TokenData:
     expires_at: datetime
 
 
-class KeycloakAuth:
+class KeycloakAuth(httpx.Auth):
     def __init__(
         self,
         http_client: httpx.AsyncClient,
@@ -33,6 +34,10 @@ class KeycloakAuth:
         self.client = http_client
         self.token_refresh_margin = token_refresh_margin
         self._token_data: TokenData | None = None
+
+    async def aclose(self) -> None:
+        """Close the client."""
+        await self.client.aclose()
 
     async def get_new_token(self) -> TokenData:
         """Get initial token using configured grant type."""
@@ -104,8 +109,14 @@ class KeycloakAuth:
         logger.success("Got a valid token.")
         return self._token_data.access_token
 
-    async def auth_flow(self, request: httpx.Request) -> httpx.Request:
+    async def async_auth_flow(
+        self, request: httpx.Request
+    ) -> typing.AsyncGenerator[httpx.Request, httpx.Response]:
         """Authentication flow for HTTPX AuthFlow protocol."""
         token = await self.get_valid_token()
         request.headers["Authorization"] = f"Bearer {token}"
-        return request
+        yield request
+
+    def sync_auth_flow(self, request: httpx.Request) -> httpx.Request:
+        """Authentication flow for HTTPX AuthFlow protocol."""
+        raise RuntimeError("This auth flow is async only.")

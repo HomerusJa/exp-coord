@@ -1,94 +1,151 @@
-from typing import Annotated, Optional, Union, override
+from typing import Any
 
 import httpx
-from loguru import logger
-from meatie import (
-    AsyncResponse,
-    Request,
-    api_ref,
-    body,
-    endpoint,
-    private,
-)
-from meatie_httpx import AsyncClient
-from pydantic import BaseModel, TypeAdapter
+from pydantic import TypeAdapter, validate_call
 
-from exp_coord.core.config import settings
-from exp_coord.core.utils import PydanticModel
+from exp_coord.core.annotations.s3i import S3IMessageQueueType
+from exp_coord.core.config import S3ISettings
 from exp_coord.services.s3i.auth import KeycloakAuth
-from exp_coord.services.s3i.error import get_error
-from exp_coord.services.s3i.message_models import S3IEvent, S3IMessage
+from exp_coord.services.s3i.error import raise_on_error
+from exp_coord.services.s3i.message_models import (
+    MultipleS3IEventAdapter,
+    MultipleS3IMessageAdapter,
+    S3IEvent,
+    S3IEventAdapter,
+    S3IMessageAdapter,
+    S3IMessageType,
+)
 
 
-class S3IBrokerClient(AsyncClient):
-    def __init__(self):
-        """Initialize the S³I Broker endpoint."""
-        client = httpx.AsyncClient(
-            base_url=settings.s3i.broker_url,
-            timeout=30.0,  # Add timeout for safety
-        )
-        self.auth = KeycloakAuth(
-            http_client=client,
-            keycloak_url=settings.s3i.auth_url,
-            realm=settings.s3i.auth_realm,
-            client_id=settings.s3i.client_id,
-            client_secret=settings.s3i.client_secret,
-        )
-        super().__init__(client)
+def _create_auth_from_settings(client: httpx.AsyncClient, settings: S3ISettings) -> KeycloakAuth:
+    return KeycloakAuth(
+        http_client=client,
+        keycloak_url=settings.auth_url,
+        realm=settings.auth_realm,
+        client_id=settings.client_id,
+        client_secret=settings.client_secret,
+    )
 
-    @override
-    async def authenticate(self, request: Request) -> None:
-        """Authenticate the request using the Keycloak token."""
-        token = await self.auth.get_valid_token()
-        request.headers["Authorization"] = f"Bearer {token}"
 
-    async def _process_single_response(
-        self,
-        response: AsyncResponse,
-        model_class: PydanticModel,
-        endpoint: str,
-        entity_type: str,
-    ) -> Optional[PydanticModel]:
-        """Process a single entity response."""
-        text = await response.text()
-        if not text:
-            logger.info(f"No {entity_type}s available for endpoint {endpoint}.")
+class S3IBrokerClient:
+    """An asynchronous implementation of the S³I api specification.
+
+    The API is defined at https://broker.s3i.vswf.dev/apidoc/
+    """
+
+    def __init__(self, settings: S3ISettings) -> None:
+        self.settings = settings
+        self.auth = _create_auth_from_settings(httpx.AsyncClient(), settings)
+        self.client = httpx.AsyncClient(base_url=settings.broker_url, auth=self.auth)
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        await self.auth.aclose()
+        await self.client.aclose()
+
+    async def _send_request(self, method: str, endpoint: str, response_adapter: TypeAdapter) -> Any:
+        response = await self.client.request(method, endpoint)
+        await raise_on_error(response)
+
+        if response.content == b"":
             return None
-        if isinstance(model_class, BaseModel):
-            return model_class.model_validate_json(text)
-        elif isinstance(model_class, TypeAdapter):
-            return model_class.validate_json(text)
-        else:
-            raise ValueError("Model class must be a Pydantic model or a Type Adapter.")
 
-    async def get_message(self, endpoint: str) -> Optional[S3IMessage]:
-        """Get a message from the broker."""
-        response = await self._get_message(endpoint=endpoint)
-        return await self._process_single_response(response, S3IMessage, endpoint, "message")
+        # This might as well work, but I am doing this for consistency
+        if response.content == b"[]":
+            return []
 
-    @endpoint("/{endpoint}", private, body(error=get_error))
-    async def _get_message(self, endpoint: str) -> AsyncResponse: ...
+        return response_adapter.validate_json(response.content)
 
-    @endpoint("/{endpoint}/all", private, body(error=get_error))
-    async def get_all_messages(self, endpoint: str) -> list[S3IMessage]: ...
+    async def receive_message(self) -> S3IMessageType | None:
+        """Receive a message from the S³I Broker.
 
-    async def get_event(self, endpoint: str) -> Optional[S3IEvent]:
-        """Get an event from the broker."""
-        response = await self._get_event(endpoint=endpoint)
-        return await self._process_single_response(response, S3IEvent, endpoint, "event")
+        Raises:
+            S3IBrokerError: If the broker responds with an error.
 
-    @endpoint("/{endpoint}/event", private, body(error=get_error))
-    async def _get_event(self, endpoint: str) -> AsyncResponse: ...
+        Returns:
+            Optional[S3IMessage]: The received message, if received.
+        """
+        return await self._send_request("GET", f"/{self.settings.message_queue}", S3IMessageAdapter)
 
-    @endpoint("/{endpoint}/event/all", private, body(error=get_error))
-    async def get_all_events(self, endpoint: str) -> list[S3IEvent]: ...
+    async def receive_all_messages(self) -> list[S3IMessageType]:
+        """Receive all messages from the S³I Broker.
 
-    # TODO: Implement response handling.
-    # The response is pretty detailed and should be handled properly.
-    # https://broker.s3i.vswf.dev/apidoc/#/Broker/post__endpoints_
-    @endpoint("/{endpoints}", private, body(error=get_error))
-    async def post(
-        self,
-        endpoints: list[str],
-        message: Annotated[Union[S3IMessage, S3IEvent], api_ref("body")],
-    ) -> None: ...  # type: ignore[empty-body]
+        Raises:
+            S3IBrokerError: If the broker responds with an error.
+
+        Returns:
+            list[S3IMessage]: The received messages.
+        """
+        return await self._send_request(
+            "GET", f"/{self.settings.message_queue}/all", MultipleS3IMessageAdapter
+        )
+
+    async def receive_event(self) -> S3IEvent | None:
+        """Receive an event from the S³I Broker.
+
+        Raises:
+            S3IBrokerError: If the broker responds with an error.
+
+        Returns:
+            Optional[S3IEvent]: The received event, if received.
+        """
+        return await self._send_request("GET", f"/{self.settings.event_queue}", S3IEventAdapter)
+
+    async def receive_all_events(self) -> list[S3IEvent]:
+        """Receive all events from the S³I Broker.
+
+        Raises:
+            S3IBrokerError: If the broker responds with an error.
+
+        Returns:
+            list[S3IEvent]: The received events.
+        """
+        return await self._send_request(
+            "GET", f"/{self.settings.event_queue}/all", MultipleS3IEventAdapter
+        )
+
+    @validate_call
+    async def send_message(
+        self, endpoint: S3IMessageQueueType | list[S3IMessageQueueType], message: S3IMessageType
+    ) -> None:
+        """Send a message to the S³I Broker.
+
+        Args:
+            endpoint (S3I_Message_Queue): The endpoint to send the message to.
+            message (S3IMessage): The message to send.
+
+        Raises:
+            S3IBrokerError: If the broker responds with an error.
+        """
+        endpoint = endpoint if isinstance(endpoint, str) else ",".join(endpoint)
+        response = await self.client.post(f"/{endpoint}", content=message.model_dump(mode="json"))
+        await raise_on_error(response)
+
+    @validate_call
+    async def send_event(self, event: S3IEvent) -> None:
+        """Send an event to the S³I Broker.
+
+        Args:
+            event (S3IEvent): The event to send.
+
+        Raises:
+            S3IBrokerError: If the broker responds with an error.
+        """
+        response = await self.client.post(f"/{event.topic}", content=event.model_dump(mode="json"))
+        await raise_on_error(response)
+
+
+async def main():
+    from exp_coord.core.config import settings
+
+    async with S3IBrokerClient(settings.s3i) as client:
+        message = await client.receive_message()
+        print(message)
+
+
+if __name__ == "__main__":
+    import asyncio
+
+    asyncio.run(main())

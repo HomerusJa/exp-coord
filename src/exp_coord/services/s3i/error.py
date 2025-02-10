@@ -1,33 +1,31 @@
-from meatie import AsyncResponse, ResponseError
+from httpx import Response
 from pydantic import BaseModel, ValidationError
 
 
 class ErrorSchema(BaseModel):
-    """Error response schema."""
+    """Error response schema as defined at https://broker.s3i.vswf.dev/apidoc/."""
 
     error: str
 
 
-class S3IBrokerError(ResponseError):
-    """S³I Broker error response."""
+class S3IBrokerError(Exception):
+    """S3I broker error."""
 
-    def __init__(self, response: AsyncResponse, error_model: ErrorSchema | None = None) -> None:
-        super().__init__(response)
-        self.error = error_model.error if error_model else "Unknown error"
-        self.status_code = response.status
+    def __init__(self, response: Response, error: ErrorSchema | None) -> None:
+        self.response = response
+        self.error = error if error else ErrorSchema(error="Unknown error")
 
     def __str__(self) -> str:
-        return f"S3IBrokerError [{self.status_code}]: {self.error}"
+        return f"[{self.response.status_code}]: {self.error.error}"
 
 
-async def get_error(response: AsyncResponse) -> Exception | None:
-    """Get the error from the response."""
-    if response.status <= 200 < 300:
-        return None
+async def raise_on_error(response: Response):
+    """Raise an S3IBrokerError if the response is an error."""
+    if not response.is_error:
+        return
 
     try:
-        error = ErrorSchema.model_validate_json(await response.text())
+        error = ErrorSchema.model_validate_json(response.content)
     except ValidationError:
         error = None
-
-    return S3IBrokerError(response, error)
+    raise S3IBrokerError(response, error)

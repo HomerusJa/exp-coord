@@ -128,6 +128,7 @@ async def test_auth_flow(respx_mock, http_client, auth_config):
     auth = KeycloakAuth(http_client=http_client, **auth_config)
 
     request = httpx.Request("GET", "https://example.com")
-    authorized_request = await auth.auth_flow(request)
+    flow = auth.async_auth_flow(request)
+    authorized_request = await anext(flow)
 
     assert authorized_request.headers["Authorization"] == "Bearer new_access_token"

@@ -6,6 +6,7 @@ from loguru import logger
 from exp_coord.core.config import settings
 from exp_coord.core.log import setup_logging
 from exp_coord.db.connection import init_db
+from exp_coord.services.s3i import S3IBrokerClient
 
 app = typer.Typer(name="exp_coord")
 
@@ -17,9 +18,16 @@ def startup() -> None:
     asyncio.run(init_db())
 
 
+async def async_run() -> None:
+    async with S3IBrokerClient() as client:
+        print(await client.get_message())
+        print(await client.get_event())
+
+
 @app.command()
 def run() -> None:
     logger.info("Running once")
+    asyncio.run(async_run())
 
 
 @app.command()

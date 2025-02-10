@@ -2,7 +2,7 @@ import pytest
 from pydantic import TypeAdapter
 
 from exp_coord.core.annotations.s3i import (
-    S3I_Queue,
+    S3IQueueType,
     _validate_s3i_event_queue,
     _validate_s3i_id,
     _validate_s3i_message_queue,
@@ -79,8 +79,8 @@ def test_s3i_event_queue_invalid(queue):
 
 
 @pytest.fixture(scope="module")
-def s3i_queue_ta() -> TypeAdapter[S3I_Queue]:
-    return TypeAdapter[S3I_Queue](S3I_Queue)
+def s3i_queue_ta() -> TypeAdapter[S3IQueueType]:
+    return TypeAdapter[S3IQueueType](S3IQueueType)
 
 
 @pytest.mark.parametrize("queue", VALID_QUEUES)

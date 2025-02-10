@@ -59,7 +59,7 @@ def _validate_s3i_event_queue(queue: str) -> str:
     return queue
 
 
-S3I_Id = Annotated[str, AfterValidator(_validate_s3i_id)]
-S3I_Message_Queue = Annotated[str, AfterValidator(_validate_s3i_message_queue)]
-S3I_Event_Queue = Annotated[str, AfterValidator(_validate_s3i_event_queue)]
-S3I_Queue = S3I_Message_Queue | S3I_Event_Queue
+S3IIdType = Annotated[str, AfterValidator(_validate_s3i_id)]
+S3IMessageQueueType = Annotated[str, AfterValidator(_validate_s3i_message_queue)]
+S3IEventQueueType = Annotated[str, AfterValidator(_validate_s3i_event_queue)]
+S3IQueueType = S3IMessageQueueType | S3IEventQueueType

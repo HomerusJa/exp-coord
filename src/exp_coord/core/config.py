@@ -5,6 +5,8 @@ import toml
 from pydantic import BaseModel, Field, field_validator
 from pydantic_settings import BaseSettings
 
+from .annotations.s3i import S3IEventQueueType, S3IIdType, S3IMessageQueueType
+
 __all__ = ["Settings", "settings"]
 
 
@@ -18,10 +20,13 @@ def find_file(filename: str) -> Path:
 
 
 class S3ISettings(BaseModel):
+    client_id: S3IIdType
+    client_secret: str
+    message_queue: S3IMessageQueueType
+    event_queue: S3IEventQueueType
+
     auth_url: str
     auth_realm: str
-    client_id: str
-    client_secret: str
     broker_url: str
 
 
