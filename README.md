@@ -1,5 +1,8 @@
 # 🌱 Experiment Coordination
 
+> [!WARNING]
+> This project is a personal work in progress. I am sharing it on GitHub to show my work and to get feedback, but I did not set this up to be easily usable by others. If you are interested in using this project, please contact me first.
+
 This repository contains the code for an experiment coordination system for my project on quantifying the effects of water shortage on plant root growth.
 
 ## 🛠️ Installation
