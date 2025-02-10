@@ -47,8 +47,10 @@ def get_grid_fs_client() -> AsyncIOMotorGridFSBucket:
 def _create_client() -> AsyncIOMotorClient:
     """Create a new database client based on the connection type."""
     if settings.mongodb.connection_type == "password":
+        logger.debug("Creating a new database client with password authentication")
         return AsyncIOMotorClient(settings.mongodb.url)
     elif settings.mongodb.connection_type == "x509":
+        logger.debug("Creating a new database client with X.509 certificate authentication")
         return AsyncIOMotorClient(
             settings.mongodb.url,
             tls=True,

@@ -36,6 +36,7 @@ class MongoDBSettingsPassword(MongoDBSettingsBase):
 
 
 class MongoDBSettingsX509(MongoDBSettingsBase):
+    connection_type: Literal["x509"]
     x509_cert_file: Path
 
     @field_validator("x509_cert_file", mode="after")
