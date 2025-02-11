@@ -41,7 +41,7 @@ class S3ISettings(BaseModel):
 
 
 class MongoDBSettingsBase(BaseModel):
-    connection_type: Literal["x509", "username"]
+    connection_type: Literal["x509", "password"]
     url: str
     db_name: str
 
