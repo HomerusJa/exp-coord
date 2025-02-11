@@ -98,6 +98,7 @@ markers = [
   "integration: marks tests as integration tests",
 ]
 
+asyncio_default_fixture_loop_scope = "function"
 logot_capturer = "logot.loguru.LoguruCapturer"
 
 [tool.coverage.run]

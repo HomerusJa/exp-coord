@@ -10,12 +10,22 @@ from .annotations.s3i import S3IEventQueueType, S3IIdType, S3IMessageQueueType
 __all__ = ["Settings", "settings"]
 
 
-def find_file(filename: str) -> Path:
-    path: Path = Path(__file__).parent.resolve()
-    while path != Path("/") and not (path / filename).exists():
+def find_file(filename: str, base_path: Path | None = None) -> Path:
+    """Find a file in the parent directories of base_path.
+
+    Args:
+        filename (str):
+    """
+    if base_path is None:
+        base_path = Path(__file__).parent
+
+    path: Path = base_path.resolve()
+    while not path.is_mount() and not (path / filename).exists():
         path = path.parent
-    if path == Path("/"):
-        raise FileNotFoundError(f"{filename} not found")
+    if path.is_mount():
+        raise FileNotFoundError(
+            f"File '{filename}' not found in parent directories of '{base_path}'"
+        )
     return path / filename
 
 
