@@ -22,7 +22,7 @@ dependencies = [
   "typer>=0.15.1",
 ]
 
-scripts.exp-coord = "exp_coord.cli:app"
+scripts.exp-coord = "exp_coord.cli.main:app"
 
 [dependency-groups]
 dev = [
