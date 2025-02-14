@@ -285,6 +285,5 @@ class S3IEvent(BaseModel):
     content: Any
 
 
-# FIXME: I could totally just use S3IEvent directly, but I'm trying to be consistent
 S3IEventAdapter = TypeAdapter(S3IEvent)
 MultipleS3IEventAdapter = TypeAdapter(list[S3IEvent])

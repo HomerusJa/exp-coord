@@ -41,8 +41,3 @@ def setup_logging():
 
     logger.remove()
     logger.add(sys.stderr, level="TRACE")
-    # TODO: Add a file handler here if needed.
-
-
-# TODO: Remove this
-setup_logging()

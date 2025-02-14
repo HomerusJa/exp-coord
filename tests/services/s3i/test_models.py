@@ -5,7 +5,7 @@ from typing import Iterable
 
 import pytest
 
-from exp_coord.services.s3i.message_models import S3IMessageAdapter
+from exp_coord.services.s3i.models import S3IMessageAdapter
 
 
 def get_broker_api_examples() -> Iterable[dict]:

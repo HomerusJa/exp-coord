@@ -7,7 +7,7 @@ from exp_coord.core.annotations.s3i import S3IMessageQueueType
 from exp_coord.core.config import S3ISettings
 from exp_coord.services.s3i.auth import KeycloakAuth
 from exp_coord.services.s3i.error import raise_on_error
-from exp_coord.services.s3i.message_models import (
+from exp_coord.services.s3i.models import (
     MultipleS3IEventAdapter,
     MultipleS3IMessageAdapter,
     S3IEvent,
