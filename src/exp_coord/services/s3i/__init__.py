@@ -1,3 +1,9 @@
 from exp_coord.services.s3i.broker import S3IBrokerClient as S3IBrokerClient
 from exp_coord.services.s3i.models import S3IEvent as S3IEvent
 from exp_coord.services.s3i.models import S3IMessageAdapter as S3IMessageAdapter
+from exp_coord.services.s3i.processor import EventHandler as EventHandler
+from exp_coord.services.s3i.processor import EventProcessor as EventProcessor
+from exp_coord.services.s3i.processor import Handler as Handler
+from exp_coord.services.s3i.processor import MessageHandler as MessageHandler
+from exp_coord.services.s3i.processor import MessageProcessor as MessageProcessor
+from exp_coord.services.s3i.processor import Processor as Processor

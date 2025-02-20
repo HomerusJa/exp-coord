@@ -26,7 +26,8 @@ scripts.exp-coord = "exp_coord.cli.main:app"
 
 [dependency-groups]
 dev = [
-  "pre-commit>=4.0.1",
+  { include-group = "lint" },
+  { include-group = "test" },
 ]
 test = [
   "logot>=1.3.0",
