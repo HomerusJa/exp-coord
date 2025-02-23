@@ -27,3 +27,11 @@ class Device(Document):
     class Settings:
         name = "devices"
         validate_on_save = True
+
+
+async def get_device_by_s3i_id(s3i_id: S3IIdType) -> Device:
+    """Get a device by its S3I ID."""
+    device = await Device.find_one({"s3i_id": s3i_id})
+    if device is None:
+        raise ValueError(f"No device found with S3I ID {s3i_id}")
+    return device

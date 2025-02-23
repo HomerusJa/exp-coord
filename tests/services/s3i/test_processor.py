@@ -65,14 +65,15 @@ def test_logs(logot: Logot):
     logot.assert_logged(logged.warning("No handlers found for message: test2"))
 
 
-def test_exception_logs(logot: Logot):
+@pytest.mark.asyncio
+async def test_exception_logs(logot: Logot):
     async def handle(message):
         raise ValueError("Test error")
 
-    handlers = [Handler("test1", lambda m: m == "test1", handle)]
+    handlers = [Handler("test1", lambda m: True, handle)]
     processor = Processor[str](handlers)
 
     # Exception is logged, not propagated
-    processor.process("test1")
+    await processor.process("some-message")
 
-    logot.assert_logged(logged.error("Handler test1 failed: Test error"))
+    logot.assert_logged(logged.error("Handler test1 failed to process message: some-message"))

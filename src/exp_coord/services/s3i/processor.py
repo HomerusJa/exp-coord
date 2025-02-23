@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Awaitable, Callable, Generic, Sequence, TypeAlias, TypeVar
 
-from loguru import _Logger, logger
+from loguru import logger
 
 from exp_coord.services.s3i import S3IEvent
 from exp_coord.services.s3i.models import S3IMessageType
@@ -21,19 +21,18 @@ class Handler(Generic[T]):
 class Processor(Generic[T]):
     """Generic message processor that can handle any type of message."""
 
-    def __init__(self, handlers: Sequence[Handler[T]], logger: _Logger = logger):
+    def __init__(self, handlers: Sequence[Handler[T]]):
         """Initialize with handlers and optional custom logger."""
         self._handlers = handlers
-        self._logger = logger
 
     def find_handlers(self, message: T) -> list[Handler[T]]:
         """Find handlers that can process the message."""
         matching = [h for h in self._handlers if h.predicate(message)]
 
         if not matching:
-            self._logger.warning(f"No handlers found for message: {message}")
+            logger.warning(f"No handlers found for message: {message}")
         elif len(matching) > 1:
-            self._logger.warning(
+            logger.warning(
                 f"Multiple handlers found for message: {message}. "
                 f"Handlers: {', '.join(h.name for h in matching)}"
             )
@@ -45,12 +44,14 @@ class Processor(Generic[T]):
         handlers = self.find_handlers(message)
 
         for handler in handlers:
-            self._logger.debug(f"Handler {handler.name} processing message: {message}")
-            try:
+            logger.debug(f"Handler {handler.name} processing message: {message}")
+
+            with logger.catch(
+                level="ERROR",
+                message=f"Handler {handler.name} failed to process message: {message}",
+            ):
                 await handler.handle(message)
-                self._logger.debug(f"Handler {handler.name} completed processing: {message}")
-            except Exception as e:
-                self._logger.exception(f"Handler {handler.name} failed: {e}")
+                logger.success(f"Handler {handler.name} successfully processed message: {message}")
 
 
 EventHandler: TypeAlias = Handler[S3IEvent]

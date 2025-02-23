@@ -1,8 +1,9 @@
 from datetime import datetime
 
 from beanie import Document, Link
+from pydantic import Field
 
-from .device import Device
+from exp_coord.db.device import Device
 
 
 class Status(Document):
@@ -17,7 +18,7 @@ class Status(Document):
 
     # TODO: Consider converting this to a timeseries index
     sent_timestamp: datetime
-    received_timestamp: datetime
+    received_timestamp: datetime = Field(default_factory=datetime.utcnow)
 
     class Settings:
         name = "statuses"

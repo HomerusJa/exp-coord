@@ -5,7 +5,7 @@ import toml
 from pydantic import BaseModel, Field, field_validator
 from pydantic_settings import BaseSettings
 
-from .annotations.s3i import S3IEventQueueType, S3IIdType, S3IMessageQueueType
+from exp_coord.core.annotations.s3i import S3IEventQueueType, S3IIdType, S3IMessageQueueType
 
 __all__ = ["Settings", "settings"]
 
@@ -29,6 +29,11 @@ def find_file(filename: str, base_path: Path | None = None) -> Path:
     return path / filename
 
 
+class S3IEventTopics(BaseModel):
+    new_image: str = "plant-growth-observation_new-image"
+    status: str = "plant-growth-observation_status"
+
+
 class S3ISettings(BaseModel):
     client_id: S3IIdType
     client_secret: str
@@ -38,6 +43,8 @@ class S3ISettings(BaseModel):
     auth_url: str
     auth_realm: str
     broker_url: str
+
+    topics: S3IEventTopics = Field(default_factory=S3IEventTopics)
 
 
 class MongoDBSettingsBase(BaseModel):

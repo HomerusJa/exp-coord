@@ -1,8 +1,7 @@
-from typing import Any, Literal, Union
+from typing import Literal, Union
 
 from pydantic import BaseModel, TypeAdapter
-
-S3IMessageAdapter = None
+from pydantic.types import JsonValue
 
 
 class Attachment(BaseModel):
@@ -73,7 +72,7 @@ class S3IServiceReply(BaseModel):
         receivers (list[str]): List of message receivers.
         replyingToMessage (str): Identifier of the referenced message.
         serviceType (str): Type of service.
-        results (Any): Result of the service.
+        results (JsonValue): Result of the service.
     """
 
     messageType: Literal["serviceReply"] = "serviceReply"
@@ -82,7 +81,7 @@ class S3IServiceReply(BaseModel):
     receivers: list[str]
     replyingToMessage: str
     serviceType: str
-    results: Any
+    results: JsonValue
 
 
 class S3IGetValueRequest(BaseModel):
@@ -114,7 +113,7 @@ class S3IGetValueReply(BaseModel):
         identifier (str): Unique identifier for the message.
         receivers (list[str]): List of message receivers.
         replyingToMessage (str): Identifier of the referenced message.
-        value (Any): Retrieved value.
+        value (JsonValue): Retrieved value.
     """
 
     messageType: Literal["getValueReply"] = "getValueReply"
@@ -122,7 +121,7 @@ class S3IGetValueReply(BaseModel):
     identifier: str
     receivers: list[str]
     replyingToMessage: str
-    value: Any
+    value: JsonValue
 
 
 class S3ISetValueRequest(BaseModel):
@@ -135,7 +134,7 @@ class S3ISetValueRequest(BaseModel):
         receivers (list[str]): List of message receivers.
         replyToEndpoint (str): Reply endpoint for the request.
         attributePath (str): Path to the attribute.
-        newValue (Any): New value to set.
+        newValue (JsonValue): New value to set.
     """
 
     messageType: Literal["setValueRequest"] = "setValueRequest"
@@ -144,7 +143,7 @@ class S3ISetValueRequest(BaseModel):
     receivers: list[str]
     replyToEndpoint: str
     attributePath: str
-    newValue: Any
+    newValue: JsonValue
 
 
 class S3ISetValueReply(BaseModel):
@@ -274,7 +273,7 @@ class S3IEvent(BaseModel):
         timestamp (int): Unix timestamp of the event.
         topic (str): Topic associated with the event.
         messageType (Literal["event"]): Type of the message.
-        content (Any): Event content.
+        content (JsonValue): Event content.
     """
 
     sender: str
@@ -282,7 +281,7 @@ class S3IEvent(BaseModel):
     timestamp: int
     topic: str
     messageType: Literal["event"] = "event"
-    content: Any
+    content: JsonValue
 
 
 S3IEventAdapter = TypeAdapter(S3IEvent)

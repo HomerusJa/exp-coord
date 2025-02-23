@@ -37,7 +37,7 @@ class ImageFileMetadata(GridFSFileMetadata):
     from_id: BeanieObjectId  # Required
 
 
-def upload_to_gridfs(
+async def upload_to_gridfs(
     filename: str,
     file_data: Any,
     metadata: GridFSFileMetadata,
@@ -47,4 +47,4 @@ def upload_to_gridfs(
     if fs is None:
         fs = get_grid_fs_client()
 
-    return fs.upload_from_stream(filename, file_data, metadata=metadata.dict())
+    return await fs.upload_from_stream(filename, file_data, metadata=metadata.dict())
