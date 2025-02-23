@@ -29,3 +29,12 @@ repos:
     rev: 0.7.22
     hooks:
     - id: mdformat
+
+  - repo: local
+    hooks:
+      - id: pytest
+        name: Run pytest before push
+        entry: pytest
+        language: system
+        pass_filenames: false
+        stages: [push]
