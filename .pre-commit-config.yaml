@@ -33,3 +33,9 @@ repos:
         language: system
         pass_filenames: false
         stages: [pre-push]
+      - id: pyright
+        name: Run pyright before push
+        entry: pyright
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
