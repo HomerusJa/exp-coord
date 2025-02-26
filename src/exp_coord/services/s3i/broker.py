@@ -42,6 +42,9 @@ class S3IBrokerClient:
         return self
 
     async def __aexit__(self, exc_type, exc, tb):
+        await self.close()
+
+    async def close(self):
         await self.auth.aclose()
         await self.client.aclose()
 
@@ -120,7 +123,7 @@ class S3IBrokerClient:
             S3IBrokerError: If the broker responds with an error.
         """
         endpoint = endpoint if isinstance(endpoint, str) else ",".join(endpoint)
-        response = await self.client.post(f"/{endpoint}", content=message.model_dump(mode="json"))
+        response = await self.client.post(f"/{endpoint}", content=message.model_dump_json())
         await raise_on_error(response)
 
     @validate_call
@@ -133,7 +136,7 @@ class S3IBrokerClient:
         Raises:
             S3IBrokerError: If the broker responds with an error.
         """
-        response = await self.client.post(f"/{event.topic}", content=event.model_dump(mode="json"))
+        response = await self.client.post(f"/{event.topic}", content=event.model_dump_json())
         await raise_on_error(response)
 
 

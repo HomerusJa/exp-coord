@@ -117,6 +117,8 @@ class KeycloakAuth(httpx.Auth):
         request.headers["Authorization"] = f"Bearer {token}"
         yield request
 
-    def sync_auth_flow(self, request: httpx.Request) -> httpx.Request:
+    def sync_auth_flow(
+        self, request: httpx.Request
+    ) -> typing.Generator[httpx.Request, httpx.Response, None]:
         """Authentication flow for HTTPX AuthFlow protocol."""
         raise RuntimeError("This auth flow is async only.")

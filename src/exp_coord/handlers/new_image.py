@@ -3,8 +3,8 @@
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, computed_field, field_validator
-from pydantic.types import Base64Bytes
+from beanie import PydanticObjectId
+from pydantic import Base64UrlBytes, BaseModel, computed_field
 
 from exp_coord.core.config import settings
 from exp_coord.db.device import get_device_by_s3i_id
@@ -24,15 +24,7 @@ class NewImageEventContent(BaseModel):
     type: Literal["image/jpeg; encoding=base64url"]
     path: str
     taken_at: int
-    image: Base64Bytes
-
-    @field_validator("image", mode="before")
-    @classmethod
-    def convert_base64url_to_base64(cls, value: str) -> str:
-        """Convert base64url to standard base64 before Base64Bytes processes it, as the standard library base64 module does not support base64url."""
-        if isinstance(value, str):
-            return value.replace("-", "+").replace("_", "/")
-        return value
+    image: Base64UrlBytes
 
     @computed_field
     def taken_at_datetime(self) -> datetime:
@@ -49,17 +41,17 @@ async def handle_new_image_event(event: S3IEvent) -> None:
     - Get the device that sent the event to later include it in the image record.
     - Create a new image record in the database.
     """
-    event_content = NewImageEventContent.model_validate(event.content)
+    content = NewImageEventContent.model_validate(event.content)
     device = await get_device_by_s3i_id(event.sender)
-    image = Image(device=device, taken_at=event.content["taken_at"], file_id=None)
+    image = Image(device=device, taken_at=datetime.fromtimestamp(content.taken_at), file_id=None)
     filename = await image.get_filename()
     metadata = ImageFileMetadata(from_id=image.id)
-    file_id = await upload_to_gridfs(filename, event_content.image, metadata)
-    image.file_id = file_id
+    file_id = await upload_to_gridfs(filename, content.image, metadata)
+    image.file_id = PydanticObjectId(file_id)
     await image.insert()
 
 
-new_image_handler = EventHandler(
+NewImageHandler = EventHandler(
     name="new_image",
     predicate=is_new_image_event,
     handle=handle_new_image_event,

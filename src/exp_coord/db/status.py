@@ -9,12 +9,12 @@ from exp_coord.db.device import Device
 class Status(Document):
     """A status of a device at a certain time."""
 
-    device: Link[Device]
+    device: Link[Device] | Device
 
     status_name: str
-    status_error_detail: str
-    status_error_source: str
-    status_error_text: str
+    status_error_detail: str = Field(default="")
+    status_error_source: str = Field(default="")
+    status_error_text: str = Field(default="")
 
     # TODO: Consider converting this to a timeseries index
     sent_timestamp: datetime

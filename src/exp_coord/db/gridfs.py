@@ -1,9 +1,9 @@
 import datetime
-from typing import Any, Literal
+from typing import Any
 
-from beanie import BeanieObjectId
+from beanie import PydanticObjectId
 from motor.motor_asyncio import AsyncIOMotorGridFSBucket
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, Field, model_validator
 
 from exp_coord.db.connection import get_grid_fs_client
 
@@ -12,7 +12,7 @@ class GridFSFileMetadata(BaseModel):
     """Metadata for a file stored in GridFS."""
 
     from_collection: str | None = None
-    from_id: BeanieObjectId | None = None
+    from_id: PydanticObjectId | None = None
     added_at: datetime.datetime | None = None
     last_modified_at: datetime.datetime | None = None
 
@@ -33,8 +33,19 @@ class GridFSFileMetadata(BaseModel):
 class ImageFileMetadata(GridFSFileMetadata):
     """Metadata for an image stored in GridFS."""
 
-    from_collection: Literal["images"] = "images"
-    from_id: BeanieObjectId  # Required
+    # Use Field with annotation to preserve parent's type signatures
+    from_collection: str | None = Field(default="images")
+    from_id: PydanticObjectId | None = Field(default=None)
+
+    @model_validator(mode="after")
+    def ensure_values_are_set(self):
+        if self.from_collection != "images":
+            raise ValueError(f"from_collection must be 'images', not {self.from_collection}")
+
+        if self.from_id is None:
+            raise ValueError("from_id must be set")
+
+        return self
 
 
 async def upload_to_gridfs(

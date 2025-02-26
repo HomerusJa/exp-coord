@@ -26,6 +26,7 @@ scripts.exp-coord = "exp_coord.cli.main:app"
 
 [dependency-groups]
 dev = [
+  "pyright>=1.1.394",
   { include-group = "lint" },
   { include-group = "test" },
 ]
@@ -127,8 +128,9 @@ sort = "Cover"
 [tool.coverage.html]
 directory = "htmlcov"
 
-[tool.mypy]
-plugins = [ "pydantic.mypy" ]
+[tool.pyright]
+include = [ "src", "tests" ]
+reportMissingTypeStubs = true
 
 [tool.uv]
 default-groups = [ "dev", "test", "lint" ]

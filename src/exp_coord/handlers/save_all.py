@@ -6,16 +6,16 @@ from exp_coord.services.s3i import EventHandler, MessageHandler, S3IEvent, S3IMe
 
 async def save_event_or_message(event: S3IEvent | S3IMessageType) -> None:
     """Save the event to MongoDB."""
-    await AllMessagesAndEvents.insert_one(data=event)
+    await AllMessagesAndEvents(data=event).insert()
 
 
-save_all_events = EventHandler(
+SaveAllEventsHandler = EventHandler(
     name="save_all",
     predicate=lambda event: True,
     handle=save_event_or_message,
 )
 
-save_all_messages = MessageHandler(
+SaveAllMessagesHandler = MessageHandler(
     name="save_all",
     predicate=lambda message: True,
     handle=save_event_or_message,

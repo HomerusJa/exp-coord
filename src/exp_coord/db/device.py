@@ -21,7 +21,6 @@ class Device(Document):
     def set_default_name(self):
         if self.name is None:
             self.name = f"{self.type}_at_{self.rhizotron_num}-{self.s3i_id}"
-
         return self
 
     class Settings:

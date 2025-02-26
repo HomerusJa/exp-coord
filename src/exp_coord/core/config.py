@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Literal
+from typing import Annotated, Literal
 
 import toml
 from pydantic import BaseModel, Field, field_validator
@@ -48,17 +48,16 @@ class S3ISettings(BaseModel):
 
 
 class MongoDBSettingsBase(BaseModel):
-    connection_type: Literal["x509", "password"]
     url: str
     db_name: str
 
 
 class MongoDBSettingsPassword(MongoDBSettingsBase):
-    connection_type: Literal["password"]
+    connection_type: Annotated[Literal["password"], "password"]
 
 
 class MongoDBSettingsX509(MongoDBSettingsBase):
-    connection_type: Literal["x509"]
+    connection_type: Annotated[Literal["x509"], "x509"]
     x509_cert_file: Path
 
     @field_validator("x509_cert_file", mode="after")

@@ -1,44 +1,20 @@
-from typing import Generic, Protocol, TypeVar
-
-from pydantic import TypeAdapter
-
-
-class PydanticModel(Protocol):
-    def model_validate(self, obj): ...
-
-    def model_validate_json(self, json_str: str): ...
-
-    def model_dump(self, obj): ...
-
-    def model_dump_json(self, obj): ...
+import asyncio
+import functools
 
 
-T = TypeVar("T")
+def syncify(func):
+    """Wrap an async function so it can be called synchronously."""
 
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop = None
 
-class TypeAdapterWrapper(Generic[T]):
-    """Wrapper for TypeAdapter to use it like a BaseModel.
+        if loop and loop.is_running():
+            return asyncio.create_task(func(*args, **kwargs))
+        else:
+            return asyncio.run(func(*args, **kwargs))
 
-    Usage:
-        type_adapter = TypeAdapter(list[int])
-        wrapped = TypeAdapterWrapper(type_adapter)
-
-        # Now you can use it like a BaseModel:
-        validated = wrapped.model_validate([1, 2, 3])
-        json_validated = wrapped.model_validate_json("[1, 2, 3]")
-    """
-
-    def __init__(self, type_adapter: TypeAdapter[T]):
-        self._adapter = type_adapter
-
-    def model_validate(self, obj):
-        return self._adapter.validate_python(obj)
-
-    def model_validate_json(self, json_str: str):
-        return self._adapter.validate_json(json_str)
-
-    def model_dump(self, obj):
-        return self._adapter.dump_python(obj)
-
-    def model_dump_json(self, obj):
-        return self._adapter.dump_json(obj)
+    return wrapper

@@ -6,6 +6,7 @@ from exp_coord.cli.s3i import app as s3i_app
 app = typer.Typer(
     help="Your friendly CLI interface for the experiment coordinator.",
     no_args_is_help=True,
+    pretty_exceptions_enable=False,
 )
 app.add_typer(
     s3i_app,
