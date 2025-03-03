@@ -35,9 +35,13 @@ repos:
         language: system
         pass_filenames: false
         stages: [pre-push]
+        # Run on changes to tests, the source code, or dependencies
+        files: ^(tests/.*\.py|src/.*\.py|uv\.lock|pyproject\.toml)$
       - id: pyright
         name: Run pyright before push
         entry: uv run pyright
         language: system
         pass_filenames: false
         stages: [pre-push]
+        # Run on changes to tests or the source code
+        files: ^(tests/.*\.py|src/.*\.py)$
