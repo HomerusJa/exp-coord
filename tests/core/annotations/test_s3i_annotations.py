@@ -36,12 +36,13 @@ INVALID_IDS = [
     "s3i:ZZZZ-ZZZZ-ZZZZ-ZZZZ-ZZZZZZZZZZZZ",
 ]
 
-INVALID_MSG_QUEUES = [*VALID_EV_QUEUES, ""]
+INVALID_MSG_QUEUES = [*VALID_EV_QUEUES, "", "s3ibs://s3i:abc"]
 
 INVALID_EV_QUEUES = [
     *VALID_MSG_QUEUES,
-    "s3ib://s3i:ab1b96cb-2181-41c6-8aaa-8ad61b813198/events",
+    "s3ib://s3i:ab1b96cb-2181-41c6-8aaa-8ad61b813198/events",  # It should be "/event", without the "s"
     "",
+    "s3ib://s3i:abc/event",
 ]
 
 

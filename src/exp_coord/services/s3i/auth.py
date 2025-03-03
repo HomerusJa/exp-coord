@@ -35,10 +35,6 @@ class KeycloakAuth(httpx.Auth):
         self.token_refresh_margin = token_refresh_margin
         self._token_data: TokenData | None = None
 
-    async def aclose(self) -> None:
-        """Close the client."""
-        await self.client.aclose()
-
     async def get_new_token(self) -> TokenData:
         """Get initial token using configured grant type."""
         if self.username and self.password:
@@ -49,7 +45,7 @@ class KeycloakAuth(httpx.Auth):
                 "username": self.username,
                 "password": self.password,
             }
-        else:
+        else:  # pragma: no cover
             data = {
                 "grant_type": "client_credentials",
                 "client_id": self.client_id,

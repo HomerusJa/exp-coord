@@ -1,6 +1,5 @@
 import json
 from pathlib import Path
-from pprint import pprint
 from typing import Iterable
 
 import pytest
@@ -17,5 +16,4 @@ def get_broker_api_examples() -> Iterable[dict]:
 @pytest.mark.parametrize("example", get_broker_api_examples())
 def test_message_models(example: dict):
     """Test the message models against the broker API examples from the Swagger docs."""
-    pprint(example)
     S3IMessageAdapter.validate_python(example)
