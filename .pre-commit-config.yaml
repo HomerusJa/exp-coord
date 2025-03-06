@@ -22,11 +22,6 @@ repos:
       - id: pyproject-fmt
         args: [--keep-full-version, --no-print-diff]
 
-  - repo: https://github.com/hukkin/mdformat
-    rev: 0.7.22
-    hooks:
-    - id: mdformat
-
   - repo: local
     hooks:
       - id: pytest
@@ -45,3 +40,9 @@ repos:
         stages: [pre-push]
         # Run on changes to tests or the source code
         files: ^(tests/.*\.py|src/.*\.py)$
+      - id: typer-autodoc
+        name: Automatically generate the CLI docs
+        entry: uv run typer src/exp_coord/cli/main.py utils docs --output docs/cli.md --title "CLI Documentation" --name exp-coord
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]

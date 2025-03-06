@@ -7,24 +7,47 @@ This repository contains the code for an experiment coordination system for my p
 
 ## 🛠️ Installation
 
-`uv` makes the installation of this project very easy. Just run the following command:
+`uv` makes the installation of this project very easy. Just run the following commands:
 
 ```bash
 cd /path/to/exp-coord
-uv sync --no-dev
+uv sync --no-default-groups
 .venv/Scripts/activate
 ```
 
 This will install all dependencies and set up the virtual environment for you.
 
+## 🧑‍💻 Development Setup
+
+If you want to set up your development environment, that's really easy too. Again, run the following commands:
+
+```bash
+cd /path/to/exp-coord
+uv sync
+.venv/Scripts/activate
+```
+
+With removing the `--no-default-groups` flag, all the testing and linting dependencies will be installed.
+
+This project uses `pre-commit` to ensure code quality. If not installed already, you can do that with:
+
+```bash
+uv tool install pre-commit
+```
+
+I'd suggest using [`pre-commit-uv`](https://pypi.org/project/pre-commit-uv/) along with `pre-commit`. To do that, run the following command:
+
+```bash
+uv tool install pre-commit --with pre-commit-uv --force-reinstall
+```
+
+Now, you can run `pre-commit install` to set up the hooks. Note that this setup runs `pyright` and `pytest` as two `pre-push` hooks, so don't wonder if pushing takes a little bit longer. This eliminates the need to set up GitHub actions, and as this is a personal project and I can live with it, you have to live with it too (-:
+
 ## 🤖 Usage
 
-Currently, the system doesn’t have a command-line interface. I am still working on the boilerplate implementation.
+The experiment coordinator currently provides a command line interface. His documentation can be found [here](docs/cli.md).
 
-I am planning to provide:
-
-- A one-off script that fetches data once.
-- A daemon that runs in a scheduled manner.
+To run a command, ensure you followed the installation instructions. If the virtual environment is activated, you can just run `exp-coord [command]`.
 
 ## 🏗️ Tech Stack
 
@@ -41,25 +64,3 @@ S3I is a protocol for secure communication between IoT devices and the cloud. It
 ### 📝 Logging
 
 For logging, we are using [**loguru**](https://loguru.readthedocs.io/en/stable/), intercepting the standard logging module to also capture logs from third-party libraries. This works great, as loguru is just a great library.
-
-## 👨‍💻 Development
-
-To start developing, setup your environment with all the extra dependencies.
-
-```bash
-cd /path/to/exp-coord
-uv sync
-```
-
-Run the tests using pytest, by running:
-
-```bash
-cd /path/to/exp-coord
-pytest
-```
-
-This project uses pre-commit hooks to ensure code quality. To install them, run:
-
-```bash
-pre-commit install
-```
