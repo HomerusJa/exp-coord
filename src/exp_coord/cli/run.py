@@ -8,7 +8,6 @@ from loguru import logger
 from exp_coord.cli.utils import skip_execution_on_help_or_completion
 from exp_coord.core.config import settings
 from exp_coord.core.log import setup_logging
-from exp_coord.core.utils import syncify
 from exp_coord.db.connection import init_db
 from exp_coord.handlers import EVENT_HANDLERS, MESSAGE_HANDLERS
 from exp_coord.services.s3i import EventProcessor, MessageProcessor, S3IBrokerClient
@@ -16,27 +15,73 @@ from exp_coord.services.s3i import EventProcessor, MessageProcessor, S3IBrokerCl
 app = typer.Typer()
 
 
+def _close_broker_client(ctx: typer.Context) -> None:
+    """Close the broker client."""
+    async_runner: asyncio.Runner | None = ctx.obj.get("async_runner", None)
+    broker_client: S3IBrokerClient | None = ctx.obj.get("broker_client", None)
+
+    if broker_client is None:
+        logger.warning("No broker client found, skipping closing the broker client")
+        return
+
+    if async_runner is None:
+        logger.error("No async runner found, skipping closing the broker client")
+        return
+
+    try:
+        async_runner.get_loop()
+    except RuntimeError as exc:
+        if str(exc) == "Runner is closed":
+            raise RuntimeError(
+                "Async runner not initialized or has already been closed, cannot close broker client"
+            ) from exc
+        else:
+            raise exc
+
+    logger.trace("Closing broker client...")
+    async_runner.run(broker_client.aclose())
+
+
 def shutdown() -> None:
-    """Shutdown cleanup function to close broker client."""
+    """Shutdown cleanup function."""
+    logger.info("Entering shutdown procedure")
     ctx = click.get_current_context()
-    broker_client = ctx.obj.get("broker_client")
-    if broker_client:
-        logger.info("Closing broker client...")
-        syncify(broker_client.close)()
+
+    with logger.catch("Error while closing broker client"):
+        _close_broker_client(ctx)
+        logger.info("Closed broker client")
+
+    with logger.catch(message="Error while closing async runner"):
+        async_runner: asyncio.Runner | None = ctx.obj.get("async_runner", None)
+        if async_runner is not None:
+            async_runner.close()
+        logger.info("Closed async runner")
+
+    logger.success("Shutdown complete")
 
 
 @app.callback()
 @skip_execution_on_help_or_completion
 def startup(ctx: typer.Context) -> None:
+    ctx.call_on_close(shutdown)
+
     logger.debug(f"Using following settings: {settings}")
     setup_logging()
-    syncify(init_db)()
+
     ctx.ensure_object(dict)
     ctx.obj["broker_client"] = S3IBrokerClient(settings.s3i)
     ctx.obj["event_processor"] = EventProcessor(EVENT_HANDLERS)
     ctx.obj["message_processor"] = MessageProcessor(MESSAGE_HANDLERS)
+    # Can't use ctx.with_resource as it closes the runner before shutdown is called. We need to now close it manually
+    ctx.obj["async_runner"] = asyncio.Runner()
 
-    ctx.call_on_close(shutdown)
+    ctx.obj["async_runner"].run(init_db())
+
+
+@app.command()
+def test(ctx: typer.Context) -> None:
+    """Run a test to check if setup and teardown works correctly."""
+    logger.info("Running test...")
 
 
 @app.command()
@@ -47,6 +92,7 @@ def single(ctx: typer.Context, only_message: bool = False, only_event: bool = Fa
     broker_client: S3IBrokerClient = ctx.obj["broker_client"]
     event_processor: EventProcessor = ctx.obj["event_processor"]
     message_processor: MessageProcessor = ctx.obj["message_processor"]
+    async_runner: asyncio.Runner = ctx.obj["async_runner"]
 
     async def process_message() -> None:
         logger.debug("Fetching one message")
@@ -67,10 +113,9 @@ def single(ctx: typer.Context, only_message: bool = False, only_event: bool = Fa
             logger.info("No events to process")
 
     if not only_event:
-        syncify(process_message)()
+        async_runner.run(process_message())
     if not only_message:
-        asyncio.run(process_event())
-    # TODO: Use something like gather here
+        async_runner.run(process_event())
 
 
 @app.command()
@@ -83,4 +128,4 @@ def forever(
     ] = True,
 ) -> None:
     """Start the experiment coordinator and run it forever, or until the messages ran out."""
-    logger.info("Running forever...")
+    raise NotImplementedError("Forever mode not yet implemented")

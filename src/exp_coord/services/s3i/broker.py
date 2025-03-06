@@ -42,10 +42,9 @@ class S3IBrokerClient:
         return self
 
     async def __aexit__(self, exc_type, exc, tb):
-        await self.close()
+        await self.aclose()
 
-    async def close(self):
-        await self.auth.aclose()
+    async def aclose(self) -> None:
         await self.client.aclose()
 
     async def _send_request(self, method: str, endpoint: str, response_adapter: TypeAdapter) -> Any:
