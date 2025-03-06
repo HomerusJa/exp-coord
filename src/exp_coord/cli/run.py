@@ -15,7 +15,7 @@ from exp_coord.services.s3i import EventProcessor, MessageProcessor, S3IBrokerCl
 app = typer.Typer()
 
 
-def _close_broker_client(ctx: typer.Context) -> None:
+def _close_broker_client(ctx: click.Context) -> None:
     """Close the broker client."""
     async_runner: asyncio.Runner | None = ctx.obj.get("async_runner", None)
     broker_client: S3IBrokerClient | None = ctx.obj.get("broker_client", None)
@@ -47,7 +47,7 @@ def shutdown() -> None:
     logger.info("Entering shutdown procedure")
     ctx = click.get_current_context()
 
-    with logger.catch("Error while closing broker client"):
+    with logger.catch(message="Error while closing broker client"):
         _close_broker_client(ctx)
         logger.info("Closed broker client")
 
