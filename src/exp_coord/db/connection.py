@@ -66,20 +66,27 @@ async def init_db() -> None:
     global __client
     global __grid_fs_client
 
-    logger.info("Initializing database connection")
+    logger.debug("Initializing database connection")
     __client = _create_client()
 
     logger.trace("Pinging the database to ensure the connection is successful")
     await get_client().admin.command("ping")
-    logger.info("Database connection established")
+    logger.success("Database connection established")
 
     await init_beanie(get_db(), document_models=__models__)
-    logger.info("Beanie initialized")
+    logger.success("Beanie initialized")
 
 
-async def shut_down_db() -> None:
-    """Shut down the database connection."""
+async def close_db() -> None:
+    """Close the database connection properly."""
+    logger.debug("Closing database connection")
+
     global __client
+
+    if __client is None:
+        logger.trace("Database connection already closed")
+        return
 
     __client.close()
     __client = None
+    logger.success("Database connection closed")

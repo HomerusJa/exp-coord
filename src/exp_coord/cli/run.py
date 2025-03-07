@@ -8,7 +8,7 @@ from loguru import logger
 from exp_coord.cli.utils import skip_execution_on_help_or_completion
 from exp_coord.core.config import settings
 from exp_coord.core.log import setup_logging
-from exp_coord.db.connection import init_db
+from exp_coord.db.connection import close_db, init_db
 from exp_coord.handlers import EVENT_HANDLERS, MESSAGE_HANDLERS
 from exp_coord.services.s3i import EventProcessor, MessageProcessor, S3IBrokerClient
 
@@ -25,8 +25,7 @@ def _close_broker_client(ctx: click.Context) -> None:
         return
 
     if async_runner is None:
-        logger.error("No async runner found, skipping closing the broker client")
-        return
+        raise RuntimeError("Async runner not found, cannot close broker client")
 
     try:
         async_runner.get_loop()
@@ -50,6 +49,13 @@ def shutdown() -> None:
     with logger.catch(message="Error while closing broker client"):
         _close_broker_client(ctx)
         logger.info("Closed broker client")
+
+    with logger.catch(message="Error while closing the database connection"):
+        async_runner: asyncio.Runner | None = ctx.obj.get("async_runner", None)
+        if async_runner is None:
+            raise RuntimeError("Async runner not initialized, cannot close database connection")
+        async_runner.run(close_db())
+        logger.info("Closed database connection")
 
     with logger.catch(message="Error while closing async runner"):
         async_runner: asyncio.Runner | None = ctx.obj.get("async_runner", None)
