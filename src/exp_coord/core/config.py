@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal, cast
 
 import toml
 from pydantic import BaseModel, Field, field_validator
@@ -70,11 +70,50 @@ class Settings(BaseSettings):
     mongodb: MongoDBSettingsPassword | MongoDBSettingsX509 = Field(discriminator="connection_type")
 
 
-def _get_settings():
-    path = find_file("config.toml")
-    with open(path, "r") as f:
+def _deep_update(destination_dict: dict[str, Any], update_dict: dict[str, Any]) -> dict[str, Any]:
+    """Recursively update a dictionary."""
+    for key, value in update_dict.items():
+        if (
+            isinstance(value, dict)
+            and key in destination_dict
+            and isinstance(destination_dict[key], dict)
+        ):
+            _deep_update(destination_dict[key], value)
+        else:
+            destination_dict[key] = value
+    return destination_dict
+
+
+def update_settings(
+    override_values: dict[str, Any] | None = None, config_path: Path | None = None
+) -> Settings:
+    """Update global settings with new values or from a different config file.
+
+    Args:
+        override_values: Dictionary of values to override
+        config_path: Alternative config file path
+
+    Returns:
+        Updated Settings instance
+    """
+    global settings
+
+    if config_path is None:
+        config_path = find_file("config.toml")
+
+    with open(config_path, "r") as f:
         config = toml.load(f)
-    return Settings.model_validate(config)
+
+    if override_values:
+        _deep_update(config, override_values)
+
+    # settings is global
+    settings = Settings.model_validate(config)
+
+    return settings
 
 
-settings = _get_settings()
+# Declare the settings variable with the proper type
+# Using "typing.cast" to tell the type checker this will be initialized in the next line
+settings: Settings = cast(Settings, None)
+update_settings()
