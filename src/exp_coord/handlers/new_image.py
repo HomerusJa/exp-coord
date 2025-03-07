@@ -46,7 +46,12 @@ async def handle_new_image_event(event: S3IEvent) -> None:
     image = Image(device=device, taken_at=datetime.fromtimestamp(content.taken_at), file_id=None)
     filename = await image.get_filename()
     metadata = ImageFileMetadata(from_id=image.id)
-    file_id = await upload_to_gridfs(filename, content.image, metadata)
+    file_id = await upload_to_gridfs(
+        filename,
+        content.image,
+        metadata,
+        bucket_name=settings.mongodb.collection_names.image_gridfs,
+    )
     image.file_id = PydanticObjectId(file_id)
     await image.insert()
 

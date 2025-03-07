@@ -2,10 +2,10 @@ import datetime
 from typing import Any
 
 from beanie import PydanticObjectId
-from motor.motor_asyncio import AsyncIOMotorGridFSBucket
+from bson import ObjectId
 from pydantic import BaseModel, Field, model_validator
 
-from exp_coord.db.connection import get_grid_fs_client
+from exp_coord.db.connection import create_grid_fs_client
 
 
 class GridFSFileMetadata(BaseModel):
@@ -52,10 +52,8 @@ async def upload_to_gridfs(
     filename: str,
     file_data: Any,
     metadata: GridFSFileMetadata,
-    fs: AsyncIOMotorGridFSBucket | None = None,
-):
+    bucket_name: str = "fs",
+) -> ObjectId:
     """Upload a file to GridFS. file_data should be a stream supported by Motor."""
-    if fs is None:
-        fs = get_grid_fs_client()
-
+    fs = create_grid_fs_client(bucket_name=bucket_name)
     return await fs.upload_from_stream(filename, file_data, metadata=metadata.dict())

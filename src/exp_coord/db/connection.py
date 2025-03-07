@@ -15,9 +15,9 @@ __models__: list[str] = [
 ]
 
 __all__ = [
+    "create_grid_fs_client",
     "get_client",
     "get_db",
-    "get_grid_fs_client",
     "init_db",
 ]
 
@@ -37,11 +37,9 @@ def get_db() -> AsyncIOMotorDatabase:
     return get_client()[settings.mongodb.db_name]
 
 
-def get_grid_fs_client() -> AsyncIOMotorGridFSBucket:
-    """Get the GridFS client, raising a RuntimeError if it is not initialized."""
-    if not __grid_fs_client:
-        raise RuntimeError("GridFS connection not established")
-    return __grid_fs_client
+def create_grid_fs_client(bucket_name: str = "fs") -> AsyncIOMotorGridFSBucket:
+    """Create a new GridFS bucket."""
+    return AsyncIOMotorGridFSBucket(get_db(), bucket_name=bucket_name)
 
 
 def _create_client() -> AsyncIOMotorClient:
@@ -78,6 +76,10 @@ async def init_db() -> None:
     await init_beanie(get_db(), document_models=__models__)
     logger.info("Beanie initialized")
 
-    logger.info("Initializing GridFS connection")
-    __grid_fs_client = AsyncIOMotorGridFSBucket(get_db())
-    logger.info("GridFS connection established")
+
+async def shut_down_db() -> None:
+    """Shut down the database connection."""
+    global __client
+
+    __client.close()
+    __client = None

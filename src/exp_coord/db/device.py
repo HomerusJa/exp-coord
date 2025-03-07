@@ -4,6 +4,7 @@ from beanie import Document
 from pydantic import model_validator
 
 from exp_coord.core.annotations.s3i import S3IEventQueueType, S3IIdType, S3IMessageQueueType
+from exp_coord.core.config import settings
 
 
 class Device(Document):
@@ -24,7 +25,7 @@ class Device(Document):
         return self
 
     class Settings:
-        name = "devices"
+        name = settings.mongodb.collection_names.device
         validate_on_save = True
 
 

@@ -47,9 +47,18 @@ class S3ISettings(BaseModel):
     topics: S3IEventTopics = Field(default_factory=S3IEventTopics)
 
 
+class CollectionNames(BaseModel):
+    all_messages_and_events: str = "all_messages_and_events"
+    device: str = "devices"
+    image: str = "images"
+    image_gridfs: str = "image_files"
+    status: str = "statuses"
+
+
 class MongoDBSettingsBase(BaseModel):
     url: str
     db_name: str
+    collection_names: CollectionNames = Field(default_factory=CollectionNames)
 
 
 class MongoDBSettingsPassword(MongoDBSettingsBase):
