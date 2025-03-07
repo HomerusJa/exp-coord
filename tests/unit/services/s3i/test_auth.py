@@ -2,7 +2,6 @@ from datetime import datetime, timedelta, timezone
 
 import httpx
 import pytest
-import pytest_asyncio
 
 from exp_coord.services.s3i.auth import KeycloakAuth, TokenData
 
@@ -20,14 +19,13 @@ def auth_config():
     }
 
 
-@pytest_asyncio.fixture()
+@pytest.fixture
 async def http_client():
     """Fixture for an async HTTP client."""
     async with httpx.AsyncClient() as client:
         yield client
 
 
-@pytest.mark.asyncio
 async def test_get_new_token(respx_mock, http_client, auth_config):
     """Test fetching a new token."""
     respx_mock.post(
@@ -51,7 +49,6 @@ async def test_get_new_token(respx_mock, http_client, auth_config):
     assert token_data.expires_at > datetime.now(timezone.utc)
 
 
-@pytest.mark.asyncio
 async def test_refresh_auth_token(respx_mock, http_client, auth_config):
     """Test refreshing an access token."""
     respx_mock.post(
@@ -75,7 +72,6 @@ async def test_refresh_auth_token(respx_mock, http_client, auth_config):
     assert token_data.expires_at > datetime.now(timezone.utc)
 
 
-@pytest.mark.asyncio
 async def test_get_valid_token_with_refresh(respx_mock, http_client, auth_config):
     """Test getting a valid token, including refresh."""
     respx_mock.post(
@@ -109,7 +105,6 @@ async def test_get_valid_token_with_refresh(respx_mock, http_client, auth_config
     assert token == "new_access_token"
 
 
-@pytest.mark.asyncio
 async def test_auth_flow(respx_mock, http_client, auth_config):
     """Test the auth_flow method."""
     respx_mock.post(

@@ -1,6 +1,5 @@
 from unittest.mock import AsyncMock
 
-import pytest
 from logot import Logot, logged
 
 from exp_coord.services.s3i import Handler, Processor
@@ -21,7 +20,6 @@ def test_find_handlers():
     assert processor.find_handlers("test3") == []
 
 
-@pytest.mark.asyncio
 async def test_process():
     handle_1 = AsyncMock()
     handle_2 = AsyncMock()
@@ -65,7 +63,6 @@ def test_logs(logot: Logot):
     logot.assert_logged(logged.warning("No handlers found for message: test2"))
 
 
-@pytest.mark.asyncio
 async def test_exception_logs(logot: Logot):
     async def handle(message):
         raise ValueError("Test error")

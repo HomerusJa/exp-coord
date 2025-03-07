@@ -32,9 +32,9 @@ class Image(Document):
         """Compute the filename of the image. This method has to be async because it fetches the device link."""
         await self.fetch_link("device")
         # self.device is getting cast to a Device object by the fetch_link method
-        assert isinstance(
-            self.device, Device
-        ), "Device link should be fetched. This should never happen."
+        assert isinstance(self.device, Device), (
+            "Device link should be fetched. This should never happen."
+        )
         return f"{self.device.s3i_id}-{self.taken_at.isoformat()}.jpg"
 
     class Settings:

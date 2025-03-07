@@ -75,6 +75,7 @@ lint.pydocstyle.convention = "google"
 minversion = "8.0"
 addopts = """
     --cov=exp_coord
+    --cov=tests
     --cov-report=term-missing
     --cov-report=xml:coverage.xml
     --cov-report=html:htmlcov
@@ -86,26 +87,19 @@ addopts = """
 """
 testpaths = [ "tests" ]
 pythonpath = [ "src" ]
-filterwarnings = [
-  "error",
-  "ignore::DeprecationWarning",
-  "ignore::UserWarning",
-]
 markers = [
-  "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+  "unit: marks tests as unit tests",
   "integration: marks tests as integration tests",
 ]
 
+asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 logot_capturer = "logot.loguru.LoguruCapturer"
 
 [tool.coverage.run]
 branch = true
-source = [ "src/exp_coord" ]
-omit = [
-  "tests/*",
-  "**/__init__.py",
-]
+source = [ "src/exp_coord", "tests" ]
+omit = [  ]
 
 [tool.coverage.report]
 exclude_lines = [

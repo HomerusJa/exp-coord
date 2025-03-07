@@ -24,8 +24,9 @@ If you want to set up your development environment, that's really easy too. Agai
 ```bash
 cd /path/to/exp-coord
 uv sync
-.venv/Scripts/activate
 ```
+
+Now activate the environment with your system specific command or be doomed to always use `uv run ...`.
 
 With removing the `--no-default-groups` flag, all the testing and linting dependencies will be installed.
 
@@ -42,6 +43,21 @@ uv tool install pre-commit --with pre-commit-uv --force-reinstall
 ```
 
 Now, you can run `pre-commit install` to set up the hooks. Note that this setup runs `pyright` and `pytest` as two `pre-push` hooks, so don't wonder if pushing takes a little bit longer. This eliminates the need to set up GitHub actions, and as this is a personal project and I can live with it, you have to live with it too (-:
+
+### 🧪 Running the tests
+
+Running tests is easy too! Just run:
+
+```bash
+uv run pytest
+```
+
+You can omit the uv run if your environment is activated. If you want to run only the integration or unit tests, please use one of the following commands:
+
+```bash
+uv run pytest -m "unit"
+uv run pytest -m "integration"
+```
 
 ## 🤖 Usage
 
