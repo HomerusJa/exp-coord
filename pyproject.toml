@@ -74,6 +74,7 @@ lint.pydocstyle.convention = "google"
 [tool.pytest.ini_options]
 minversion = "8.0"
 addopts = """
+    --import-mode=importlib
     --cov=exp_coord
     --cov=tests
     --cov-report=term-missing

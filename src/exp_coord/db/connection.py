@@ -1,4 +1,6 @@
-from beanie import init_beanie
+import asyncio
+
+from beanie import Document, init_beanie
 from loguru import logger
 from motor.motor_asyncio import (
     AsyncIOMotorClient,
@@ -7,11 +9,16 @@ from motor.motor_asyncio import (
 )
 
 from exp_coord.core.config import settings
+from exp_coord.db.all_messages_and_events import AllMessagesAndEvents
+from exp_coord.db.device import Device
+from exp_coord.db.image import Image
+from exp_coord.db.status import Status
 
-__models__: list[str] = [
-    "exp_coord.db.device.Device",
-    "exp_coord.db.image.Image",
-    "exp_coord.db.status.Status",
+__models__: list[Document] = [
+    AllMessagesAndEvents,
+    Device,
+    Image,
+    Status,
 ]
 
 __all__ = [
@@ -46,16 +53,20 @@ def _create_client() -> AsyncIOMotorClient:
     """Create a new database client based on the connection type."""
     if settings.mongodb.connection_type == "password":
         logger.debug("Creating a new database client with password authentication")
-        return AsyncIOMotorClient(settings.mongodb.url)
+        client = AsyncIOMotorClient(settings.mongodb.url)
     elif settings.mongodb.connection_type == "x509":
         logger.debug("Creating a new database client with X.509 certificate authentication")
-        return AsyncIOMotorClient(
+        client = AsyncIOMotorClient(
             settings.mongodb.url,
             tls=True,
             tlsCertificateKeyFile=str(settings.mongodb.x509_cert_file),
         )
     else:
         raise ValueError(f"Invalid connection type: {settings.mongodb.connection_type}")
+
+    # Reference: https://stackoverflow.com/a/69065287/22478603
+    client.get_io_loop = asyncio.get_running_loop
+    return client
 
 
 async def init_db() -> None:
@@ -66,7 +77,9 @@ async def init_db() -> None:
     global __client
     global __grid_fs_client
 
-    logger.debug("Initializing database connection")
+    logger.debug(
+        f"Initializing database connection at {settings.mongodb.url} using the database {settings.mongodb.db_name}"
+    )
     __client = _create_client()
 
     logger.trace("Pinging the database to ensure the connection is successful")
