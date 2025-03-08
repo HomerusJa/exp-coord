@@ -1,6 +1,7 @@
 default_install_hook_types: [pre-commit, pre-push]
 
 repos:
+  # --- Pre-commit ---
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
@@ -24,6 +25,23 @@ repos:
 
   - repo: local
     hooks:
+      - id: ggshield
+        name: GitGuardian Shield
+        entry: ggshield secret scan pre-commit
+        language: system
+        pass_filenames: false
+        stages: [ pre-commit ]
+
+      - id: typer-autodoc
+        name: Automatically generate the CLI docs
+        entry: uv run typer src/exp_coord/cli/main.py utils docs --output docs/cli.md --title "CLI Documentation" --name exp-coord
+        language: system
+        pass_filenames: false
+        stages: [ pre-commit ]
+
+  # --- Pre-push ---
+  - repo: local
+    hooks:
       - id: pytest
         name: Run pytest before push
         entry: uv run pytest
@@ -40,9 +58,3 @@ repos:
         stages: [pre-push]
         # Run on changes to tests or the source code
         files: ^(tests/.*\.py|src/.*\.py)$
-      - id: typer-autodoc
-        name: Automatically generate the CLI docs
-        entry: uv run typer src/exp_coord/cli/main.py utils docs --output docs/cli.md --title "CLI Documentation" --name exp-coord
-        language: system
-        pass_filenames: false
-        stages: [pre-commit]
