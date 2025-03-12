@@ -1,6 +1,6 @@
 import asyncio
 
-from beanie import Document, init_beanie
+from beanie import init_beanie
 from loguru import logger
 from motor.motor_asyncio import (
     AsyncIOMotorClient,
@@ -8,13 +8,13 @@ from motor.motor_asyncio import (
     AsyncIOMotorGridFSBucket,
 )
 
-from exp_coord.core.config import settings
+from exp_coord.core.config import get_settings
 from exp_coord.db.all_messages_and_events import AllMessagesAndEvents
 from exp_coord.db.device import Device
 from exp_coord.db.image import Image
 from exp_coord.db.status import Status
 
-__models__: list[Document] = [
+__models__ = [
     AllMessagesAndEvents,
     Device,
     Image,
@@ -41,7 +41,8 @@ def get_client() -> AsyncIOMotorClient:
 
 def get_db() -> AsyncIOMotorDatabase:
     """Get the database, raising a RuntimeError if the client is not initialized."""
-    return get_client()[settings.mongodb.db_name]
+    logger.debug(f"{get_settings()=}")
+    return get_client()[get_settings().mongodb.db_name]
 
 
 def create_grid_fs_client(bucket_name: str = "fs") -> AsyncIOMotorGridFSBucket:
@@ -51,6 +52,7 @@ def create_grid_fs_client(bucket_name: str = "fs") -> AsyncIOMotorGridFSBucket:
 
 def _create_client() -> AsyncIOMotorClient:
     """Create a new database client based on the connection type."""
+    settings = get_settings()
     if settings.mongodb.connection_type == "password":
         logger.debug("Creating a new database client with password authentication")
         client = AsyncIOMotorClient(settings.mongodb.url)
@@ -78,7 +80,7 @@ async def init_db() -> None:
     global __grid_fs_client
 
     logger.debug(
-        f"Initializing database connection at {settings.mongodb.url} using the database {settings.mongodb.db_name}"
+        f"Initializing database connection at {get_settings().mongodb.url} using the database {get_settings().mongodb.db_name}"
     )
     __client = _create_client()
 

@@ -6,7 +6,7 @@ import typer
 from loguru import logger
 
 from exp_coord.cli.utils import skip_execution_on_help_or_completion
-from exp_coord.core.config import settings
+from exp_coord.core.config import get_settings
 from exp_coord.core.log import setup_logging
 from exp_coord.db.connection import close_db, init_db
 from exp_coord.handlers import EVENT_HANDLERS, MESSAGE_HANDLERS
@@ -71,11 +71,11 @@ def shutdown() -> None:
 def startup(ctx: typer.Context) -> None:
     ctx.call_on_close(shutdown)
 
-    logger.debug(f"Using following settings: {settings}")
+    logger.debug(f"Using following settings: {get_settings()}")
     setup_logging()
 
     ctx.ensure_object(dict)
-    ctx.obj["broker_client"] = S3IBrokerClient(settings.s3i)
+    ctx.obj["broker_client"] = S3IBrokerClient(get_settings().s3i)
     ctx.obj["event_processor"] = EventProcessor(EVENT_HANDLERS)
     ctx.obj["message_processor"] = MessageProcessor(MESSAGE_HANDLERS)
     # Can't use ctx.with_resource as it closes the runner before shutdown is called. We need to now close it manually

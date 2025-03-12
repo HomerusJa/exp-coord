@@ -6,7 +6,7 @@ from functools import wraps
 import typer
 
 from exp_coord.cli.utils import skip_execution_on_help_or_completion
-from exp_coord.core.config import settings
+from exp_coord.core.config import get_settings
 from exp_coord.services.s3i import S3IBrokerClient
 
 app = typer.Typer()
@@ -30,7 +30,7 @@ def async_command(func):
 def startup(ctx: typer.Context) -> None:
     """Main entry point that sets up the S3I client."""
     ctx.ensure_object(dict)
-    ctx.obj["s3i_client"] = S3IBrokerClient(settings.s3i)
+    ctx.obj["s3i_client"] = S3IBrokerClient(get_settings().s3i)
 
 
 @app.command()

@@ -1,8 +1,9 @@
-import pytest
-from beanie import init_beanie
+from typing import AsyncGenerator
 
-from exp_coord.core.config import settings, update_settings
-from exp_coord.db.connection import __models__, _create_client
+import pytest
+
+from exp_coord.core.config import get_settings, update_settings
+from exp_coord.db.connection import close_db, get_db, init_db
 from exp_coord.db.device import Device
 
 
@@ -34,12 +35,12 @@ async def create_dummy_devices():
 
 
 @pytest.fixture(scope="session", name="setup_database")
-async def _setup_database() -> None:
-    db_name = settings.mongodb.db_name + "-test"
+async def _setup_database() -> AsyncGenerator[None, None]:
+    db_name = get_settings().mongodb.db_name + "-test"
     update_settings({"mongodb": {"db_name": db_name}})
-    client = _create_client()
-    database = client[db_name]
-    await init_beanie(database, document_models=__models__)
+
+    await init_db()
+    assert get_db().name == db_name, f"The db name was not updated properly, {get_db().name=}"
 
     # Create all the dummy data
     await create_dummy_devices()
@@ -48,4 +49,4 @@ async def _setup_database() -> None:
         yield
     finally:
         # client.drop_database(database)
-        client.close()
+        await close_db()

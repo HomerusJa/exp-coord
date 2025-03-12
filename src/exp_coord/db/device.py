@@ -8,7 +8,7 @@ from exp_coord.core.annotations.s3i import (
     S3IIdType,
     S3IMessageQueueType,
 )
-from exp_coord.core.config import settings
+from exp_coord.core.config import get_settings
 
 
 class Device(Document):
@@ -29,7 +29,7 @@ class Device(Document):
         return self
 
     class Settings:
-        name = settings.mongodb.collection_names.device
+        name = get_settings().mongodb.collection_names.device
         validate_on_save = True
 
 

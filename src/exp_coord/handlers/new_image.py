@@ -6,7 +6,7 @@ from typing import Literal
 from beanie import PydanticObjectId
 from pydantic import Base64UrlBytes, BaseModel, computed_field
 
-from exp_coord.core.config import settings
+from exp_coord.core.config import get_settings
 from exp_coord.db.device import get_device_by_s3i_id
 from exp_coord.db.gridfs import ImageFileMetadata, upload_to_gridfs
 from exp_coord.db.image import Image
@@ -15,7 +15,7 @@ from exp_coord.services.s3i import EventHandler, S3IEvent
 
 def is_new_image_event(event: S3IEvent) -> bool:
     """Check if the event is a new image event."""
-    return event.topic == settings.s3i.topics.new_image
+    return event.topic == get_settings().s3i.topics.new_image
 
 
 class NewImageEventContent(BaseModel):
@@ -50,7 +50,7 @@ async def handle_new_image_event(event: S3IEvent) -> None:
         filename,
         content.image,
         metadata,
-        bucket_name=settings.mongodb.collection_names.image_gridfs,
+        bucket_name=get_settings().mongodb.collection_names.image_gridfs,
     )
     image.file_id = PydanticObjectId(file_id)
     await image.insert()

@@ -140,9 +140,9 @@ class S3IBrokerClient:
 
 
 async def main():
-    from exp_coord.core.config import settings
+    from exp_coord.core.config import get_settings
 
-    async with S3IBrokerClient(settings.s3i) as client:
+    async with S3IBrokerClient(get_settings().s3i) as client:
         message = await client.receive_message()
         print(message)
 

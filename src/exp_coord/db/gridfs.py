@@ -1,6 +1,7 @@
 import datetime
 from typing import Any
 
+import pydantic
 from beanie import PydanticObjectId
 from bson import ObjectId
 from pydantic import BaseModel, Field, model_validator
@@ -48,6 +49,7 @@ class ImageFileMetadata(GridFSFileMetadata):
         return self
 
 
+@pydantic.validate_call(config=pydantic.ConfigDict(arbitrary_types_allowed=True))
 async def upload_to_gridfs(
     filename: str,
     file_data: Any,

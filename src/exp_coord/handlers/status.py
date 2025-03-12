@@ -5,7 +5,7 @@ from datetime import datetime
 from loguru import logger
 from pydantic import BaseModel
 
-from exp_coord.core.config import settings
+from exp_coord.core.config import get_settings
 from exp_coord.db.device import get_device_by_s3i_id
 from exp_coord.db.status import Status
 from exp_coord.services.s3i import EventHandler, S3IEvent
@@ -13,7 +13,7 @@ from exp_coord.services.s3i import EventHandler, S3IEvent
 
 def is_status_event(event: S3IEvent) -> bool:
     """Check if the event is a status event."""
-    return event.topic == settings.s3i.topics.status
+    return event.topic == get_settings().s3i.topics.status
 
 
 class StatusEventContent(BaseModel):

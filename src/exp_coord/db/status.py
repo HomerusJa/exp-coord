@@ -3,6 +3,7 @@ from datetime import datetime
 from beanie import Document, Link
 from pydantic import Field
 
+from exp_coord.core.config import get_settings
 from exp_coord.db.device import Device
 
 
@@ -21,5 +22,5 @@ class Status(Document):
     received_timestamp: datetime = Field(default_factory=datetime.utcnow)
 
     class Settings:
-        name = "statuses"
+        name = get_settings().mongodb.collection_names.status
         validate_on_save = True

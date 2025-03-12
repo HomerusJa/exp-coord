@@ -7,8 +7,6 @@ from pydantic_settings import BaseSettings
 
 from exp_coord.core.annotations.s3i import S3IEventQueueType, S3IIdType, S3IMessageQueueType
 
-__all__ = ["Settings", "settings"]
-
 
 def find_file(filename: str, base_path: Path | None = None) -> Path:
     """Find a file in the parent directories of base_path.
@@ -105,7 +103,7 @@ def update_settings(
     Returns:
         Updated Settings instance
     """
-    global settings
+    global __settings
 
     if config_path is None:
         config_path = find_file("config.toml")
@@ -124,5 +122,12 @@ def update_settings(
 
 # Declare the settings variable with the proper type
 # Using "typing.cast" to tell the type checker this will be initialized in the next line
-settings: Settings = cast(Settings, None)
+__settings: Settings = cast(Settings, None)
 update_settings()
+
+
+def get_settings() -> Settings:
+    global __settings
+    if __settings is None:
+        __settings = update_settings()
+    return __settings

@@ -2,7 +2,7 @@ from datetime import datetime
 
 from beanie import Document, Link, PydanticObjectId
 
-from exp_coord.core.config import settings
+from exp_coord.core.config import get_settings
 from exp_coord.db.device import Device
 
 
@@ -18,7 +18,7 @@ class Image(Document):
     image = Image(device=..., taken_at=..., filename=filename)
     metadata = ImageFileMetadata(from_id=image.id)
     with aiofiles.open("path/to/image.jpg", "rb") as f:
-        file_id = upload_to_gridfs(filename, f, metadata, bucket_name=settings.mongodb.collection_names.image_gridfs)
+        file_id = upload_to_gridfs(filename, f, metadata, bucket_name=get_settings().mongodb.collection_names.image_gridfs)
         image.file_id = file_id
         await image.insert()
     ```
@@ -39,5 +39,5 @@ class Image(Document):
         return f"{self.device.s3i_id}-{self.taken_at.isoformat()}.jpg"
 
     class Settings:
-        name = settings.mongodb.collection_names.image
+        name = get_settings().mongodb.collection_names.image
         validate_on_save = True
