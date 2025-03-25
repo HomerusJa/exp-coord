@@ -72,10 +72,7 @@ def _create_client() -> AsyncIOMotorClient:
 
 
 async def init_db() -> None:
-    """Initialize the database, GridFS connection and beanie.
-
-    You can run this function in a synchronous context using asyncio.run(init_db()).
-    """
+    """Initialize the database, GridFS connection and beanie."""
     global __client
     global __grid_fs_client
 
