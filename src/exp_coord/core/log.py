@@ -36,8 +36,8 @@ class InterceptHandler(logging.Handler):
         logger.opt(depth=depth, exception=record.exc_info).log(level, record.getMessage())
 
 
-def setup_logging():
+def setup_logging(level: str = "DEBUG"):
     logging.basicConfig(handlers=[InterceptHandler()], level=0, force=True)
 
     logger.remove()
-    logger.add(sys.stderr, level="TRACE")
+    logger.add(sys.stderr, level=level)

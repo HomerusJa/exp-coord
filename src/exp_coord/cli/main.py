@@ -2,12 +2,21 @@ import typer
 
 from exp_coord.cli.run import app as run_app
 from exp_coord.cli.s3i import app as s3i_app
+from exp_coord.core.log import setup_logging
 
 app = typer.Typer(
     help="Your friendly CLI interface for the experiment coordinator.",
     no_args_is_help=True,
     pretty_exceptions_enable=False,
 )
+
+
+@app.callback()
+def setup(level: str = "DEBUG"):
+    print(f"Running setup, {level=}")
+    setup_logging(level)
+
+
 app.add_typer(
     s3i_app,
     name="s3i",
