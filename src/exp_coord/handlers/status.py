@@ -1,6 +1,7 @@
 """Handling of status events."""
 
 from datetime import datetime
+from typing import Literal
 
 from loguru import logger
 from pydantic import BaseModel
@@ -19,7 +20,9 @@ def is_status_event(event: S3IEvent) -> bool:
 class StatusEventContent(BaseModel):
     """Content of a status event."""
 
-    status_name: str
+    type: Literal["status"] = "status"
+    status: str
+    detail: str = ""
     status_error_detail: str = ""
     status_error_source: str = ""
     status_error_text: str = ""
@@ -31,12 +34,13 @@ async def handle_status_event(event: S3IEvent) -> None:
     device = await get_device_by_s3i_id(event.sender)
     status = Status(
         device=device,
-        status_name=content.status_name,
+        status=content.status,
         status_error_detail=content.status_error_detail,
         status_error_source=content.status_error_source,
         status_error_text=content.status_error_text,
         sent_timestamp=datetime.fromtimestamp(event.timestamp),
-    ).insert()
+    )
+    await status.insert()
     logger.success(f"Status event saved: {status}")
 
 

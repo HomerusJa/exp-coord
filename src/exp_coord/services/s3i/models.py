@@ -280,7 +280,7 @@ class S3IEvent(BaseModel):
     identifier: str
     timestamp: int
     topic: str
-    messageType: Literal["event"] = "event"
+    messageType: Literal["eventMessage"] = "eventMessage"
     content: JsonValue
 
 

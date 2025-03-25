@@ -12,7 +12,8 @@ class Status(Document):
 
     device: Link[Device] | Device
 
-    status_name: str
+    status: str
+    detail: str = Field(default="")
     status_error_detail: str = Field(default="")
     status_error_source: str = Field(default="")
     status_error_text: str = Field(default="")
