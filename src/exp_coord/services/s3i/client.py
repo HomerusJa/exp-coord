@@ -27,16 +27,13 @@ def _create_auth_from_settings(client: httpx.AsyncClient, settings: S3ISettings)
     )
 
 
-class S3IBrokerClient:
-    """An asynchronous implementation of the S³I api specification.
+class BaseS3IClient:
+    """The base client, providing the boilerplate for the other clients further down the road."""
 
-    The API is defined at https://broker.s3i.vswf.dev/apidoc/
-    """
-
-    def __init__(self, settings: S3ISettings) -> None:
+    def __init__(self, settings: S3ISettings, base_url: str) -> None:
         self.settings = settings
         self.auth = _create_auth_from_settings(httpx.AsyncClient(), settings)
-        self.client = httpx.AsyncClient(base_url=settings.broker_url, auth=self.auth)
+        self.client = httpx.AsyncClient(base_url=base_url, auth=self.auth)
 
     async def __aenter__(self):
         return self
@@ -48,6 +45,16 @@ class S3IBrokerClient:
         await self.client.aclose()
 
     async def _send_request(self, method: str, endpoint: str, response_adapter: TypeAdapter) -> Any:
+        """Send a  request to the specified endpoint and deserialize the response.
+
+        Args:
+            method (str): The HTTP method to use.
+            endpoint (str): The endpoint to send the request to.
+            response_adapter (TypeAdapter): The response adapter to use.
+
+        Returns:
+            Any: The deserialized response.
+        """
         response = await self.client.request(method, endpoint)
         await raise_on_error(response)
 
@@ -59,6 +66,16 @@ class S3IBrokerClient:
             return []
 
         return response_adapter.validate_json(response.content)
+
+
+class S3IBrokerClient(BaseS3IClient):
+    """An asynchronous implementation of the S³I api specification.
+
+    The API is defined at https://broker.s3i.vswf.dev/apidoc/
+    """
+
+    def __init__(self, settings: S3ISettings) -> None:
+        super().__init__(settings, settings.broker_url)
 
     async def receive_message(self) -> S3IMessageType | None:
         """Receive a message from the S³I Broker.
@@ -139,15 +156,7 @@ class S3IBrokerClient:
         await raise_on_error(response)
 
 
-async def main():
-    from exp_coord.core.config import get_settings
+class S3IConfigClient(BaseS3IClient):
+    """A client for interfacing with the S3I config API, specified under https://config.s3i.vswf.dev/apidoc/"""
 
-    async with S3IBrokerClient(get_settings().s3i) as client:
-        message = await client.receive_message()
-        print(message)
-
-
-if __name__ == "__main__":
-    import asyncio
-
-    asyncio.run(main())
+    # TODO: Implement this class
