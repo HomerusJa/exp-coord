@@ -40,18 +40,27 @@ class Processor(Generic[T]):
         return matching
 
     async def process(self, message: T) -> None:
-        """Process a message with all matching handlers."""
+        """Process a message with all matching handlers.
+
+        Raises:
+            ExceptionGroup: If any error occurred during processing from one of the handlers.
+        """
         handlers = self.find_handlers(message)
 
+        exceptions: list[Exception] = []
         for handler in handlers:
-            logger.debug(f"Handler {handler.name} processing message: {message}")
+            logger.debug(f"Handler {handler.name} started processing message: {message}")
 
-            with logger.catch(
-                level="ERROR",
-                message=f"Handler {handler.name} failed to process message: {message}",
-            ):
+            try:
                 await handler.handle(message)
                 logger.success(f"Handler {handler.name} successfully processed message: {message}")
+            except Exception as exc:  # noqa: BLE001
+                exceptions.append(exc)
+                logger.exception(f"Handler {handler.name} failed to process message: {message}")
+        if exceptions:
+            raise ExceptionGroup(
+                f"The message <{message}> (partially) failed to process", exceptions
+            )
 
 
 EventHandler: TypeAlias = Handler[S3IEvent]

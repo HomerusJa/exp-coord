@@ -116,6 +116,8 @@ def single(ctx: typer.Context, only_message: bool = False, only_event: bool = Fa
         message = await broker_client.receive_message()
         if message is not None:
             logger.debug(f"Processing message: {message}")
+
+            # TODO: Consider adding error handling here
             await message_processor.process(message)
         else:
             logger.info("No messages to process")
@@ -125,6 +127,8 @@ def single(ctx: typer.Context, only_message: bool = False, only_event: bool = Fa
         event = await broker_client.receive_event()
         if event is not None:
             logger.debug(f"Processing event: {event}")
+
+            # TODO: Consider adding error handling here
             await event_processor.process(event)
         else:
             logger.info("No events to process")
