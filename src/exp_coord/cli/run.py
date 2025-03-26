@@ -81,6 +81,7 @@ def shutdown() -> None:
 @app.callback()
 @skip_execution_on_help_or_completion
 def startup(ctx: typer.Context) -> None:
+    # FIXME: Runs on automatic help from `exp-coord run single` when no arguments are provided
     ctx.call_on_close(shutdown)
 
     logger.debug(f"Using following settings: {get_settings()}")
@@ -101,13 +102,17 @@ def test(ctx: typer.Context) -> None:
     logger.info("Running test...")
 
 
-@app.command()
-def single(ctx: typer.Context, only_message: bool = False, only_event: bool = False) -> None:
-    """Process just one message or event from the queue."""
-    logger.info("Running...")
+single = typer.Typer(
+    help="Run the message processing pipeline a single time.", no_args_is_help=True, name="single"
+)
+
+
+@single.command()
+def message(ctx: typer.Context) -> None:
+    """Process a single message from the queue."""
+    logger.info("Running message processing...")
 
     broker_client: S3IBrokerClient = ctx.obj["broker_client"]
-    event_processor: EventProcessor = ctx.obj["event_processor"]
     message_processor: MessageProcessor = ctx.obj["message_processor"]
     async_runner: asyncio.Runner = ctx.obj["async_runner"]
 
@@ -122,6 +127,18 @@ def single(ctx: typer.Context, only_message: bool = False, only_event: bool = Fa
         else:
             logger.info("No messages to process")
 
+    async_runner.run(process_message())
+
+
+@single.command()
+def event(ctx: typer.Context) -> None:
+    """Process a single event from the queue."""
+    logger.info("Running event processing...")
+
+    broker_client: S3IBrokerClient = ctx.obj["broker_client"]
+    event_processor: EventProcessor = ctx.obj["event_processor"]
+    async_runner: asyncio.Runner = ctx.obj["async_runner"]
+
     async def process_event() -> None:
         logger.debug("Fetching one event")
         event = await broker_client.receive_event()
@@ -133,10 +150,10 @@ def single(ctx: typer.Context, only_message: bool = False, only_event: bool = Fa
         else:
             logger.info("No events to process")
 
-    if not only_event:
-        async_runner.run(process_message())
-    if not only_message:
-        async_runner.run(process_event())
+    async_runner.run(process_event())
+
+
+app.add_typer(single)
 
 
 @app.command()
