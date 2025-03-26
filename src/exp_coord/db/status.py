@@ -18,7 +18,6 @@ class Status(Document):
     status_error_source: str = Field(default="")
     status_error_text: str = Field(default="")
 
-    # TODO: Consider converting this to a timeseries index
     sent_timestamp: datetime
     received_timestamp: datetime = Field(default_factory=datetime.utcnow)
 

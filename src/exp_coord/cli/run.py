@@ -81,7 +81,6 @@ def shutdown() -> None:
 @app.callback()
 @skip_execution_on_help_or_completion
 def startup(ctx: typer.Context) -> None:
-    # FIXME: Runs on automatic help from `exp-coord run single` when no arguments are provided
     ctx.call_on_close(shutdown)
 
     logger.debug(f"Using following settings: {get_settings()}")
@@ -122,7 +121,6 @@ def message(ctx: typer.Context) -> None:
         if message is not None:
             logger.debug(f"Processing message: {message}")
 
-            # TODO: Consider adding error handling here
             await message_processor.process(message)
         else:
             logger.info("No messages to process")
@@ -145,7 +143,6 @@ def event(ctx: typer.Context) -> None:
         if event is not None:
             logger.debug(f"Processing event: {event}")
 
-            # TODO: Consider adding error handling here
             await event_processor.process(event)
         else:
             logger.info("No events to process")

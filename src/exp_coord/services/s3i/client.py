@@ -159,4 +159,5 @@ class S3IBrokerClient(BaseS3IClient):
 class S3IConfigClient(BaseS3IClient):
     """A client for interfacing with the S3I config API, specified under https://config.s3i.vswf.dev/apidoc/"""
 
-    # TODO: Implement this class
+    def __init__(self):
+        raise NotImplementedError("See issue #4")

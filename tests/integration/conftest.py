@@ -42,7 +42,7 @@ async def _setup_database() -> AsyncGenerator[None, None]:
     await init_db()
     assert get_db().name == db_name, (
         f"The db name was not updated properly, {get_db().name=}, not {db_name=}"
-    )  # FIXME
+    )
 
     # Create all the dummy data
     await create_dummy_devices()

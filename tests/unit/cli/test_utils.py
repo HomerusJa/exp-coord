@@ -28,8 +28,6 @@ def test_skip_execution_decorator():
     assert result.exit_code == 0
     assert execution_count == 1  # Should not have increased
 
-    # TODO: Test 3: Test with shell completion
-
 
 def test_decorated_function_preserves_metadata():
     """Test that the decorator preserves the original function's metadata"""
