@@ -1,5 +1,4 @@
 import asyncio
-from typing import Annotated
 
 import click
 import typer
@@ -10,8 +9,6 @@ from exp_coord.core.config import get_settings
 from exp_coord.db.connection import close_db, get_client, init_db
 from exp_coord.handlers import EVENT_HANDLERS, MESSAGE_HANDLERS
 from exp_coord.services.s3i import EventProcessor, MessageProcessor, S3IBrokerClient
-
-app = typer.Typer()
 
 
 def _close_broker_client(ctx: click.Context) -> None:
@@ -78,9 +75,12 @@ def shutdown() -> None:
     logger.success("Shutdown complete")
 
 
-@app.callback()
 @skip_execution_on_help_or_completion
 def startup(ctx: typer.Context) -> None:
+    """Set up the context with the necessary clients, set up the database and so on.
+
+    Use with `app.callback(startup)`
+    """
     ctx.call_on_close(shutdown)
 
     logger.debug(f"Using following settings: {get_settings()}")
@@ -93,74 +93,3 @@ def startup(ctx: typer.Context) -> None:
     ctx.obj["async_runner"] = asyncio.Runner()
 
     ctx.obj["async_runner"].run(init_db())
-
-
-@app.command()
-def test(ctx: typer.Context) -> None:
-    """Run a test to check if setup and teardown works correctly."""
-    logger.info("Running test...")
-
-
-single = typer.Typer(
-    help="Run the message processing pipeline a single time.", no_args_is_help=True, name="single"
-)
-
-
-@single.command()
-def message(ctx: typer.Context) -> None:
-    """Process a single message from the queue."""
-    logger.info("Running message processing...")
-
-    broker_client: S3IBrokerClient = ctx.obj["broker_client"]
-    message_processor: MessageProcessor = ctx.obj["message_processor"]
-    async_runner: asyncio.Runner = ctx.obj["async_runner"]
-
-    async def process_message() -> None:
-        logger.debug("Fetching one message")
-        message = await broker_client.receive_message()
-        if message is not None:
-            logger.debug(f"Processing message: {message}")
-
-            await message_processor.process(message)
-        else:
-            logger.info("No messages to process")
-
-    async_runner.run(process_message())
-
-
-@single.command()
-def event(ctx: typer.Context) -> None:
-    """Process a single event from the queue."""
-    logger.info("Running event processing...")
-
-    broker_client: S3IBrokerClient = ctx.obj["broker_client"]
-    event_processor: EventProcessor = ctx.obj["event_processor"]
-    async_runner: asyncio.Runner = ctx.obj["async_runner"]
-
-    async def process_event() -> None:
-        logger.debug("Fetching one event")
-        event = await broker_client.receive_event()
-        if event is not None:
-            logger.debug(f"Processing event: {event}")
-
-            await event_processor.process(event)
-        else:
-            logger.info("No events to process")
-
-    async_runner.run(process_event())
-
-
-app.add_typer(single)
-
-
-@app.command()
-def forever(
-    stop_when_empty: Annotated[
-        bool,
-        typer.Option(
-            help="Should the experiment coordinator stop when it doesn't receive any messages anymore?"
-        ),
-    ] = True,
-) -> None:
-    """Start the experiment coordinator and run it forever, or until the messages ran out."""
-    raise NotImplementedError("Forever mode not yet implemented")

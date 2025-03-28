@@ -122,9 +122,24 @@ $ exp-coord run [OPTIONS] COMMAND [ARGS]...
 
 **Commands**:
 
-* `test`: Run a test to check if setup and teardown...
 * `forever`: Start the experiment coordinator and run...
+* `test`: Run a test to check if setup and teardown...
+* `all`: Run the specified pipeline until all...
 * `single`: Run the message processing pipeline a...
+
+### `exp-coord run forever`
+
+Start the experiment coordinator and run it forever, or until the messages ran out.
+
+**Usage**:
+
+```console
+$ exp-coord run forever [OPTIONS]
+```
+
+**Options**:
+
+* `--help`: Show this message and exit.
 
 ### `exp-coord run test`
 
@@ -140,19 +155,51 @@ $ exp-coord run test [OPTIONS]
 
 * `--help`: Show this message and exit.
 
-### `exp-coord run forever`
+### `exp-coord run all`
 
-Start the experiment coordinator and run it forever, or until the messages ran out.
+Run the specified pipeline until all messages have been processed.
 
 **Usage**:
 
 ```console
-$ exp-coord run forever [OPTIONS]
+$ exp-coord run all [OPTIONS] COMMAND [ARGS]...
 ```
 
 **Options**:
 
-* `--stop-when-empty / --no-stop-when-empty`: Should the experiment coordinator stop when it doesn&#x27;t receive any messages anymore?  [default: stop-when-empty]
+* `--help`: Show this message and exit.
+
+**Commands**:
+
+* `message`: Process all messages from the queue.
+* `event`: Process a single event from the queue.
+
+#### `exp-coord run all message`
+
+Process all messages from the queue.
+
+**Usage**:
+
+```console
+$ exp-coord run all message [OPTIONS]
+```
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+#### `exp-coord run all event`
+
+Process a single event from the queue.
+
+**Usage**:
+
+```console
+$ exp-coord run all event [OPTIONS]
+```
+
+**Options**:
+
 * `--help`: Show this message and exit.
 
 ### `exp-coord run single`
