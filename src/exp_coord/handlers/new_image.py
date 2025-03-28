@@ -43,7 +43,11 @@ async def handle_new_image_event(event: S3IEvent) -> None:
     """
     content = NewImageEventContent.model_validate(event.content)
     device = await get_device_by_s3i_id(event.sender)
-    image = Image(device=device, taken_at=datetime.fromtimestamp(content.taken_at), file_id=None)
+    image = Image(
+        device=device,  # pyright: ignore[reportArgumentType]
+        taken_at=datetime.fromtimestamp(content.taken_at),
+        file_id=None,
+    )
     filename = await image.get_filename()
     metadata = ImageFileMetadata(from_id=image.id)
     file_id = await upload_to_gridfs(

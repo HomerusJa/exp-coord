@@ -10,7 +10,7 @@ from exp_coord.db.device import Device
 class Status(Document):
     """A status of a device at a certain time."""
 
-    device: Link[Device] | Device
+    device: Link[Device]
 
     status: str
     detail: str = Field(default="")

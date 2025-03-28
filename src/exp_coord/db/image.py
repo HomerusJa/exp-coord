@@ -24,7 +24,7 @@ class Image(Document):
     ```
     """
 
-    device: Link[Device] | Device
+    device: Link[Device]
     taken_at: datetime
 
     file_id: PydanticObjectId | None = None

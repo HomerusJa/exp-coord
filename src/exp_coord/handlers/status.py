@@ -33,7 +33,7 @@ async def handle_status_event(event: S3IEvent) -> None:
     content = StatusEventContent.model_validate(event.content)
     device = await get_device_by_s3i_id(event.sender)
     status = Status(
-        device=device,
+        device=device,  # pyright: ignore[reportArgumentType]
         status=content.status,
         status_error_detail=content.status_error_detail,
         status_error_source=content.status_error_source,
