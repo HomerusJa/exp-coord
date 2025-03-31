@@ -5,7 +5,11 @@ import toml
 from pydantic import BaseModel, Field, field_validator
 from pydantic_settings import BaseSettings
 
-from exp_coord.core.annotations.s3i import S3IEventQueueType, S3IIdType, S3IMessageQueueType
+from exp_coord.services.s3i.base.annotations import (
+    S3IEventQueueType,
+    S3IIdType,
+    S3IMessageQueueType,
+)
 
 
 def find_file(filename: str, base_path: Path | None = None) -> Path:

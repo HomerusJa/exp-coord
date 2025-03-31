@@ -1,7 +1,7 @@
 from pydantic import validate_call
 
-from exp_coord.core.annotations.s3i import S3IMessageQueueType
 from exp_coord.core.config import S3ISettings
+from exp_coord.services.s3i.base.annotations import S3IMessageQueueType
 from exp_coord.services.s3i.base.client import BaseS3IClient
 from exp_coord.services.s3i.broker.error import raise_on_error
 from exp_coord.services.s3i.broker.models import (
