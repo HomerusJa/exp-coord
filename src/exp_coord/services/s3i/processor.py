@@ -1,3 +1,4 @@
+import asyncio
 from dataclasses import dataclass
 from typing import Awaitable, Callable, Generic, Sequence, TypeAlias, TypeVar
 
@@ -61,6 +62,23 @@ class Processor(Generic[T]):
             raise ExceptionGroup(
                 f"The message <{message}> (partially) failed to process", exceptions
             )
+
+    async def process_all(self, messages: Sequence[T]) -> None:
+        """Process all messages concurrently. This also merges all the ExceptionGroups into one."""
+        tasks = (self.process(message) for message in messages)
+        results: Sequence[None | BaseException] = await asyncio.gather(
+            *tasks, return_exceptions=True
+        )
+
+        exceptions = []
+        for result in results:
+            if isinstance(result, ExceptionGroup):
+                exceptions.extend(result.exceptions)  # Unpack nested exceptions
+            elif isinstance(result, BaseException):
+                exceptions.append(result)
+
+        if exceptions:
+            raise ExceptionGroup("Merged exceptions from process_all", exceptions)
 
 
 EventHandler: TypeAlias = Handler[S3IEvent]

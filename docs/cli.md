@@ -139,6 +139,8 @@ $ exp-coord run forever [OPTIONS]
 
 **Options**:
 
+* `--interval INTEGER`: [default: 60]
+* `--exit-on-failure / --no-exit-on-failure`: [default: exit-on-failure]
 * `--help`: Show this message and exit.
 
 ### `exp-coord run test`
@@ -172,7 +174,7 @@ $ exp-coord run all [OPTIONS] COMMAND [ARGS]...
 **Commands**:
 
 * `message`: Process all messages from the queue.
-* `event`: Process a single event from the queue.
+* `event`: Process all events from the queue.
 
 #### `exp-coord run all message`
 
@@ -190,7 +192,7 @@ $ exp-coord run all message [OPTIONS]
 
 #### `exp-coord run all event`
 
-Process a single event from the queue.
+Process all events from the queue.
 
 **Usage**:
 
