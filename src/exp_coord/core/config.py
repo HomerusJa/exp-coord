@@ -41,6 +41,7 @@ class S3ISettings(BaseModel):
     auth_url: str
     auth_realm: str
     broker_url: str
+    config_url: str
 
     topics: S3IEventTopics = Field(default_factory=S3IEventTopics)
 

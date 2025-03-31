@@ -1,11 +1,8 @@
 import asyncio
 from dataclasses import dataclass
-from typing import Awaitable, Callable, Generic, Sequence, TypeAlias, TypeVar
+from typing import Awaitable, Callable, Generic, Sequence, TypeVar
 
 from loguru import logger
-
-from exp_coord.services.s3i import S3IEvent
-from exp_coord.services.s3i.models import S3IMessageType
 
 T = TypeVar("T")
 
@@ -79,10 +76,3 @@ class Processor(Generic[T]):
 
         if exceptions:
             raise ExceptionGroup("Merged exceptions from process_all", exceptions)
-
-
-EventHandler: TypeAlias = Handler[S3IEvent]
-EventProcessor: TypeAlias = Processor[S3IEvent]
-
-MessageHandler: TypeAlias = Handler[S3IMessageType]
-MessageProcessor: TypeAlias = Processor[S3IMessageType]

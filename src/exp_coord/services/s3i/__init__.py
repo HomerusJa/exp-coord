@@ -1,11 +1,15 @@
-from exp_coord.services.s3i.client import S3IBrokerClient as S3IBrokerClient
-from exp_coord.services.s3i.models import S3IEvent as S3IEvent
-from exp_coord.services.s3i.models import S3IEventAdapter as S3IEventAdapter
-from exp_coord.services.s3i.models import S3IMessageAdapter as S3IMessageAdapter
-from exp_coord.services.s3i.models import S3IMessageType as S3IMessageType
-from exp_coord.services.s3i.processor import EventHandler as EventHandler
-from exp_coord.services.s3i.processor import EventProcessor as EventProcessor
-from exp_coord.services.s3i.processor import Handler as Handler
-from exp_coord.services.s3i.processor import MessageHandler as MessageHandler
-from exp_coord.services.s3i.processor import MessageProcessor as MessageProcessor
-from exp_coord.services.s3i.processor import Processor as Processor
+from typing import TypeAlias
+
+from exp_coord.services.s3i.base.processor import Handler as Handler
+from exp_coord.services.s3i.base.processor import Processor as Processor
+from exp_coord.services.s3i.broker.client import S3IBrokerClient as S3IBrokerClient
+from exp_coord.services.s3i.broker.models import S3IEvent as S3IEvent
+from exp_coord.services.s3i.broker.models import S3IEventAdapter as S3IEventAdapter
+from exp_coord.services.s3i.broker.models import S3IMessageAdapter as S3IMessageAdapter
+from exp_coord.services.s3i.broker.models import S3IMessageType as S3IMessageType
+
+EventHandler: TypeAlias = Handler[S3IEvent]
+EventProcessor: TypeAlias = Processor[S3IEvent]
+
+MessageHandler: TypeAlias = Handler[S3IMessageType]
+MessageProcessor: TypeAlias = Processor[S3IMessageType]

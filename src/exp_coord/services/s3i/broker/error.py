@@ -1,6 +1,8 @@
 from httpx import Response
 from pydantic import BaseModel, ValidationError
 
+from exp_coord.services.s3i.base.error import BaseS3IError
+
 
 class ErrorSchema(BaseModel):
     """Error response schema as defined at https://broker.s3i.vswf.dev/apidoc/."""
@@ -8,7 +10,7 @@ class ErrorSchema(BaseModel):
     error: str
 
 
-class S3IBrokerError(Exception):
+class S3IBrokerError(BaseS3IError):
     """S3I broker error."""
 
     def __init__(self, response: Response, error: ErrorSchema | None) -> None:

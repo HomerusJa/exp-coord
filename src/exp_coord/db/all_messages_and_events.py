@@ -4,7 +4,7 @@ from beanie import Document
 from pydantic import Field
 
 from exp_coord.core.config import get_settings
-from exp_coord.services.s3i.models import S3IEvent, S3IMessageType
+from exp_coord.services.s3i import S3IEvent, S3IMessageType
 
 
 class AllMessagesAndEvents(Document):

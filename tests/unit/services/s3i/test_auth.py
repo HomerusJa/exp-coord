@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 import httpx
 import pytest
 
-from exp_coord.services.s3i.auth import KeycloakAuth, TokenData
+from exp_coord.services.s3i.base.auth import KeycloakAuth, TokenData
 
 
 @pytest.fixture
