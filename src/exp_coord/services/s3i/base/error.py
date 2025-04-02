@@ -1,29 +1,19 @@
 from httpx import Response
-from pydantic import BaseModel, TypeAdapter, ValidationError
+from pydantic import BaseModel, Field, ValidationError
 
 
 class ErrorSchema(BaseModel):
-    """Error response schema."""
+    """Unified error response schema with alias support."""
 
-    error: str
-
-
-class ErrorMessageSchema(BaseModel):
-    """Another error response schema. They seemingly couldn't agree on one (-:"""
-
-    error_message: str
-
-
-_ErrorSchemaTypes = ErrorSchema | ErrorMessageSchema
-_ErrorSchemaAdapter = TypeAdapter(_ErrorSchemaTypes)
+    error: str = Field(..., alias="error_message")
 
 
 class S3IError(Exception):
     """S3I error."""
 
-    def __init__(self, response: Response, error: _ErrorSchemaTypes | None) -> None:
+    def __init__(self, response: Response, error: ErrorSchema | None) -> None:
         self.response = response
-        self.error = error if error else ErrorSchema(error="Unknown error")
+        self.error = error if error else ErrorSchema(error_message="Unknown error")
 
     def __str__(self) -> str:
         return f"[{self.response.status_code}]: {self.error.error}"
@@ -35,7 +25,7 @@ async def raise_on_error(response: Response):
         return
 
     try:
-        error = _ErrorSchemaAdapter.validate_json(response.content)
+        error = ErrorSchema.model_validate_json(response.content)
     except ValidationError:
         error = None
     raise S3IError(response, error)

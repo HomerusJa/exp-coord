@@ -12,12 +12,12 @@ class S3IConfigClient(BaseS3IClient):
     async def create_person(self, username: str, password: str) -> CreatePersonResponse:
         if username.lower() != username:
             raise ValueError("The username must be lowercase.")
-        return self._send_request(
+        content = await self._send_request(
             "POST",
             "/persons/",
-            CreatePersonResponse,
             json={"username": username, "password": password},
         )
+        return CreatePersonResponse.model_validate_json(content)
 
-    async def query_person(self, username: str) -> str:
-        return self._send_request("GET", f"/persons/{username}", None)
+    async def query_person(self, username: str) -> bytes:
+        return await self._send_request("GET", f"/persons/{username}")

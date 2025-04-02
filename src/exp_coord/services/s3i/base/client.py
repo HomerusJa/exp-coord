@@ -1,9 +1,6 @@
-from functools import cache
 from typing import Any, AsyncIterable, Iterable
 
 import httpx
-from loguru import logger
-from pydantic import TypeAdapter
 
 from exp_coord.core.config import S3ISettings
 from exp_coord.services.s3i.base.auth import KeycloakAuth
@@ -18,13 +15,6 @@ def _create_auth_from_settings(client: httpx.AsyncClient, settings: S3ISettings)
         client_id=settings.client_id,
         client_secret=settings.client_secret,
     )
-
-
-@cache
-def _get_type_adapter(type_: Any) -> TypeAdapter:
-    """Create a cached TypeAdapter instance for a type. The caching is the only reason for this function to exist."""
-    logger.debug(f"Creating cached TypeAdapter for {type_}")
-    return TypeAdapter(type_)
 
 
 class BaseS3IClient:
@@ -48,10 +38,10 @@ class BaseS3IClient:
         self,
         method: str,
         endpoint: str,
-        response_adapter: TypeAdapter | Any | None = None,
-        content: str | bytes | Iterable[bytes] | AsyncIterable[bytes] = "",
+        *,
+        content: str | bytes | Iterable[bytes] | AsyncIterable[bytes] | None = None,
         **extra_request_kwargs: Any,
-    ) -> Any:
+    ) -> bytes:
         """Send a  request to the specified endpoint and deserialize the response.
 
         Args:
@@ -65,23 +55,11 @@ class BaseS3IClient:
             **extra_request_kwargs: Extra kwargs passed to httpx.AsyncClient.request()
 
         Returns:
-            Any: The (deserialized) response.
+            `T` if `response_adapter` is provided.
         """
         response = await self.client.request(
             method, endpoint, content=content, **extra_request_kwargs
         )
         await raise_on_error(response)
 
-        if len(response.content) == 0:
-            return None
-
-        # TODO: Shouldn't this be handled by the response adapter?
-        # This might as well work, but I am doing this for consistency
-        if response.content == b"[]":
-            return []
-
-        if isinstance(response_adapter, TypeAdapter):
-            return response_adapter.validate_json(response.content)
-        if response_adapter is not None:
-            return _get_type_adapter(response_adapter).validate_json(response.content)
         return response.content

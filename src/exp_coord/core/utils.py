@@ -1,20 +1,14 @@
-import asyncio
-import functools
+from functools import cache
+from typing import TypeVar
+
+from loguru import logger
+from pydantic import TypeAdapter
+
+T = TypeVar("T")
 
 
-def syncify(func):
-    """Wrap an async function so it can be called synchronously."""
-
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        try:
-            loop = asyncio.get_running_loop()
-        except RuntimeError:
-            loop = None
-
-        if loop and loop.is_running():
-            return asyncio.create_task(func(*args, **kwargs))
-        else:
-            return asyncio.run(func(*args, **kwargs))
-
-    return wrapper
+@cache
+def _get_type_adapter(type_: T) -> TypeAdapter[T]:
+    """Create a cached TypeAdapter instance for a type. The caching is the only reason for this function to exist."""
+    logger.debug(f"Creating cached TypeAdapter for {type_}")
+    return TypeAdapter(type_)
