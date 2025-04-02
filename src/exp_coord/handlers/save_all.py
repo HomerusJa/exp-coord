@@ -1,10 +1,10 @@
 """A handler to just save every message and event to MongoDB."""
 
 from exp_coord.db.all_messages_and_events import AllMessagesAndEvents
-from exp_coord.services.s3i import EventHandler, MessageHandler, S3IEvent, S3IMessageType
+from exp_coord.services.s3i import EventHandler, MessageHandler, S3IEvent, S3IMessage
 
 
-async def save_event_or_message(event: S3IEvent | S3IMessageType) -> None:
+async def save_event_or_message(event: S3IEvent | S3IMessage) -> None:
     """Save the event to MongoDB."""
     await AllMessagesAndEvents(data=event).insert()
 

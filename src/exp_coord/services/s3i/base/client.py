@@ -1,11 +1,13 @@
-from typing import Any
+from functools import cache
+from typing import Any, AsyncIterable, Iterable
 
 import httpx
+from loguru import logger
 from pydantic import TypeAdapter
 
 from exp_coord.core.config import S3ISettings
 from exp_coord.services.s3i.base.auth import KeycloakAuth
-from exp_coord.services.s3i.broker.error import raise_on_error
+from exp_coord.services.s3i.base.error import raise_on_error
 
 
 def _create_auth_from_settings(client: httpx.AsyncClient, settings: S3ISettings) -> KeycloakAuth:
@@ -16,6 +18,13 @@ def _create_auth_from_settings(client: httpx.AsyncClient, settings: S3ISettings)
         client_id=settings.client_id,
         client_secret=settings.client_secret,
     )
+
+
+@cache
+def _get_type_adapter(type_: Any) -> TypeAdapter:
+    """Create a cached TypeAdapter instance for a type. The caching is the only reason for this function to exist."""
+    logger.debug(f"Creating cached TypeAdapter for {type_}")
+    return TypeAdapter(type_)
 
 
 class BaseS3IClient:
@@ -35,25 +44,44 @@ class BaseS3IClient:
     async def aclose(self) -> None:
         await self.client.aclose()
 
-    async def _send_request(self, method: str, endpoint: str, response_adapter: TypeAdapter) -> Any:
+    async def _send_request(
+        self,
+        method: str,
+        endpoint: str,
+        response_adapter: TypeAdapter | Any | None = None,
+        content: str | bytes | Iterable[bytes] | AsyncIterable[bytes] = "",
+        **extra_request_kwargs: Any,
+    ) -> Any:
         """Send a  request to the specified endpoint and deserialize the response.
 
         Args:
             method (str): The HTTP method to use.
             endpoint (str): The endpoint to send the request to.
-            response_adapter (TypeAdapter): The response adapter to use.
+            response_adapter (TypeAdapter | Any | None):
+                Either an already instantiated TypeAdapter, or a type other than None in which case
+                a cached TypeAdapter instance will be created, or None, when the response content
+                will be returned as is.
+            content (str): The content to send in the request.
+            **extra_request_kwargs: Extra kwargs passed to httpx.AsyncClient.request()
 
         Returns:
-            Any: The deserialized response.
+            Any: The (deserialized) response.
         """
-        response = await self.client.request(method, endpoint)
+        response = await self.client.request(
+            method, endpoint, content=content, **extra_request_kwargs
+        )
         await raise_on_error(response)
 
-        if response.content == b"":
+        if len(response.content) == 0:
             return None
 
+        # TODO: Shouldn't this be handled by the response adapter?
         # This might as well work, but I am doing this for consistency
         if response.content == b"[]":
             return []
 
-        return response_adapter.validate_json(response.content)
+        if isinstance(response_adapter, TypeAdapter):
+            return response_adapter.validate_json(response.content)
+        if response_adapter is not None:
+            return _get_type_adapter(response_adapter).validate_json(response.content)
+        return response.content

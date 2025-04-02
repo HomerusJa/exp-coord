@@ -1,16 +1,11 @@
 from pydantic import validate_call
 
+from exp_coord.core.annotations.s3i import S3IMessageQueueType
 from exp_coord.core.config import S3ISettings
-from exp_coord.services.s3i.base.annotations import S3IMessageQueueType
 from exp_coord.services.s3i.base.client import BaseS3IClient
-from exp_coord.services.s3i.broker.error import raise_on_error
 from exp_coord.services.s3i.broker.models import (
-    MultipleS3IEventAdapter,
-    MultipleS3IMessageAdapter,
     S3IEvent,
-    S3IEventAdapter,
-    S3IMessageAdapter,
-    S3IMessageType,
+    S3IMessage,
 )
 
 
@@ -23,7 +18,7 @@ class S3IBrokerClient(BaseS3IClient):
     def __init__(self, settings: S3ISettings) -> None:
         super().__init__(settings, settings.broker_url)
 
-    async def receive_message(self) -> S3IMessageType | None:
+    async def receive_message(self) -> S3IMessage | None:
         """Receive a message from the S³I Broker.
 
         Raises:
@@ -32,9 +27,9 @@ class S3IBrokerClient(BaseS3IClient):
         Returns:
             Optional[S3IMessage]: The received message, if received.
         """
-        return await self._send_request("GET", f"/{self.settings.message_queue}", S3IMessageAdapter)
+        return await self._send_request("GET", f"/{self.settings.message_queue}", S3IMessage)
 
-    async def receive_all_messages(self) -> list[S3IMessageType]:
+    async def receive_all_messages(self) -> list[S3IMessage]:
         """Receive all messages from the S³I Broker.
 
         Raises:
@@ -44,7 +39,7 @@ class S3IBrokerClient(BaseS3IClient):
             list[S3IMessage]: The received messages.
         """
         return await self._send_request(
-            "GET", f"/{self.settings.message_queue}/all", MultipleS3IMessageAdapter
+            "GET", f"/{self.settings.message_queue}/all", list[S3IMessage]
         )
 
     async def receive_event(self) -> S3IEvent | None:
@@ -56,7 +51,7 @@ class S3IBrokerClient(BaseS3IClient):
         Returns:
             Optional[S3IEvent]: The received event, if received.
         """
-        return await self._send_request("GET", f"/{self.settings.event_queue}", S3IEventAdapter)
+        return await self._send_request("GET", f"/{self.settings.event_queue}", S3IEvent)
 
     async def receive_all_events(self) -> list[S3IEvent]:
         """Receive all events from the S³I Broker.
@@ -67,13 +62,11 @@ class S3IBrokerClient(BaseS3IClient):
         Returns:
             list[S3IEvent]: The received events.
         """
-        return await self._send_request(
-            "GET", f"/{self.settings.event_queue}/all", MultipleS3IEventAdapter
-        )
+        return await self._send_request("GET", f"/{self.settings.event_queue}/all", list[S3IEvent])
 
     @validate_call
     async def send_message(
-        self, endpoint: S3IMessageQueueType | list[S3IMessageQueueType], message: S3IMessageType
+        self, endpoint: S3IMessageQueueType | list[S3IMessageQueueType], message: S3IMessage
     ) -> None:
         """Send a message to the S³I Broker.
 
@@ -85,8 +78,7 @@ class S3IBrokerClient(BaseS3IClient):
             S3IBrokerError: If the broker responds with an error.
         """
         endpoint = endpoint if isinstance(endpoint, str) else ",".join(endpoint)
-        response = await self.client.post(f"/{endpoint}", content=message.model_dump_json())
-        await raise_on_error(response)
+        await self._send_request("POST", f"/{endpoint}", content=message.model_dump_json())
 
     @validate_call
     async def send_event(self, event: S3IEvent) -> None:
@@ -98,5 +90,4 @@ class S3IBrokerClient(BaseS3IClient):
         Raises:
             S3IBrokerError: If the broker responds with an error.
         """
-        response = await self.client.post(f"/{event.topic}", content=event.model_dump_json())
-        await raise_on_error(response)
+        await self.client.post(f"/{event.topic}", content=event.model_dump_json())

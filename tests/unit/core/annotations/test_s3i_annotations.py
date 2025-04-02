@@ -1,7 +1,7 @@
 import pytest
 from pydantic import TypeAdapter
 
-from exp_coord.services.s3i.base.annotations import (
+from exp_coord.core.annotations.s3i import (
     S3IQueueType,
     _validate_s3i_event_queue,
     _validate_s3i_id,

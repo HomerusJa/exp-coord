@@ -39,6 +39,13 @@ repos:
         pass_filenames: false
         stages: [ pre-commit ]
 
+      - id: import-linter
+        name: Run import-linter
+        entry: uv run lint-imports
+        language: system
+        pass_filenames: false
+        stages: [ pre-commit ]
+
   # --- Pre-push ---
   - repo: local
     hooks:

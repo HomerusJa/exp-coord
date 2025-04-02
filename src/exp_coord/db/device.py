@@ -3,12 +3,12 @@ from typing import Literal
 from beanie import Document
 from pydantic import model_validator
 
-from exp_coord.core.config import get_settings
-from exp_coord.services.s3i.base.annotations import (
+from exp_coord.core.annotations.s3i import (
     S3IEventQueueType,
     S3IIdType,
     S3IMessageQueueType,
 )
+from exp_coord.core.config import get_settings
 
 
 class Device(Document):

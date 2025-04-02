@@ -1,0 +1,14 @@
+[importlinter]
+root_package = exp_coord
+
+[importlinter:contract:layers]
+name = Basic layer contract
+type = layers
+layers =
+    cli
+    handlers
+    db
+    services
+    core
+containers =
+    exp_coord

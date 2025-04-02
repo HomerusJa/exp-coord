@@ -1,6 +1,6 @@
 from typing import Literal, Union
 
-from pydantic import BaseModel, TypeAdapter
+from pydantic import BaseModel
 from pydantic.types import JsonValue
 
 
@@ -246,7 +246,7 @@ class S3IDeleteAttributeReply(BaseModel):
     ok: bool
 
 
-S3IMessageType = Union[
+S3IMessage = Union[
     S3IUserMessage,
     S3IServiceRequest,
     S3IServiceReply,
@@ -259,9 +259,6 @@ S3IMessageType = Union[
     S3IDeleteAttributeRequest,
     S3IDeleteAttributeReply,
 ]
-
-S3IMessageAdapter = TypeAdapter(S3IMessageType)
-MultipleS3IMessageAdapter = TypeAdapter(list[S3IMessageType])
 
 
 class S3IEvent(BaseModel):
@@ -282,7 +279,3 @@ class S3IEvent(BaseModel):
     topic: str
     messageType: Literal["eventMessage"] = "eventMessage"
     content: JsonValue
-
-
-S3IEventAdapter = TypeAdapter(S3IEvent)
-MultipleS3IEventAdapter = TypeAdapter(list[S3IEvent])

@@ -3,8 +3,9 @@ from pathlib import Path
 from typing import Iterable
 
 import pytest
+from pydantic import TypeAdapter
 
-from exp_coord.services.s3i.broker.models import S3IMessageAdapter
+from exp_coord.services.s3i.broker.models import S3IMessage
 
 
 def get_broker_api_examples() -> Iterable[dict]:
@@ -13,7 +14,12 @@ def get_broker_api_examples() -> Iterable[dict]:
     return (obj["value"] for obj in docs["components"]["examples"].values())
 
 
+@pytest.fixture(scope="session")
+def s3i_message_adapter() -> TypeAdapter[S3IMessage]:
+    return TypeAdapter(S3IMessage)
+
+
 @pytest.mark.parametrize("example", get_broker_api_examples())
-def test_message_models(example: dict):
+def test_message_models(example: dict, s3i_message_adapter):
     """Test the message models against the broker API examples from the Swagger docs."""
-    S3IMessageAdapter.validate_python(example)
+    s3i_message_adapter.validate_python(example)
