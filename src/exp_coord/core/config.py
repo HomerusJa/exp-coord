@@ -39,6 +39,9 @@ class S3IEventTopics(BaseModel):
 class S3ISettings(BaseModel):
     client_id: S3IIdType
     client_secret: str
+    username: str | None = None
+    password: str | None = None
+
     message_queue: S3IMessageQueueType
     event_queue: S3IEventQueueType
 

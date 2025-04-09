@@ -14,6 +14,8 @@ def _create_auth_from_settings(client: httpx.AsyncClient, settings: S3ISettings)
         realm=settings.auth_realm,
         client_id=settings.client_id,
         client_secret=settings.client_secret,
+        username=settings.username,
+        password=settings.password,
     )
 
 
@@ -40,8 +42,9 @@ class BaseS3IClient:
         endpoint: str,
         *,
         content: str | bytes | Iterable[bytes] | AsyncIterable[bytes] | None = None,
+        extend_allowed_response_codes: list[int] | None = None,
         **extra_request_kwargs: Any,
-    ) -> bytes:
+    ) -> httpx.Response:
         """Send a  request to the specified endpoint and deserialize the response.
 
         Args:
@@ -60,6 +63,6 @@ class BaseS3IClient:
         response = await self.client.request(
             method, endpoint, content=content, **extra_request_kwargs
         )
-        await raise_on_error(response)
+        await raise_on_error(response, extend_allowed_response_codes)
 
-        return response.content
+        return response

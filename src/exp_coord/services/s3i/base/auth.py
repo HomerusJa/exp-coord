@@ -27,29 +27,33 @@ class KeycloakAuth(httpx.Auth):
     ) -> None:
         self.token_url = f"{keycloak_url.rstrip('/')}/realms/{realm}/protocol/openid-connect/token"
 
-        self.client_id = client_id
-        self.client_secret = client_secret
-        self.username = username
-        self.password = password
+        self.__client_id = client_id
+        self.__client_secret = client_secret
+        self.__username = username
+        self.__password = password
         self.client = http_client
         self.token_refresh_margin = token_refresh_margin
         self._token_data: TokenData | None = None
 
+    @property
+    def is_person(self):
+        return self.__username is not None and self.__password is not None
+
     async def get_new_token(self) -> TokenData:
         """Get initial token using configured grant type."""
-        if self.username and self.password:
+        if self.is_person:
             data = {
                 "grant_type": "password",
-                "client_id": self.client_id,
-                "client_secret": self.client_secret,
-                "username": self.username,
-                "password": self.password,
+                "client_id": self.__client_id,
+                "client_secret": self.__client_secret,
+                "username": self.__username,
+                "password": self.__password,
             }
         else:  # pragma: no cover
             data = {
                 "grant_type": "client_credentials",
-                "client_id": self.client_id,
-                "client_secret": self.client_secret,
+                "client_id": self.__client_id,
+                "client_secret": self.__client_secret,
             }
 
         response = await self.client.post(self.token_url, data=data)
@@ -68,8 +72,8 @@ class KeycloakAuth(httpx.Auth):
         """Refresh the access token using the refresh token."""
         data = {
             "grant_type": "refresh_token",
-            "client_id": self.client_id,
-            "client_secret": self.client_secret,
+            "client_id": self.__client_id,
+            "client_secret": self.__client_secret,
             "refresh_token": refresh_token,
         }
 

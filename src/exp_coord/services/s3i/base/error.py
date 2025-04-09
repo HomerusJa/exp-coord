@@ -19,8 +19,16 @@ class S3IError(Exception):
         return f"[{self.response.status_code}]: {self.error.error}"
 
 
-async def raise_on_error(response: Response):
+async def raise_on_error(
+    response: Response, extend_allowed_response_codes: list[int] | None = None
+) -> None:
     """Raise an S3IError if the response is an error."""
+    if (
+        extend_allowed_response_codes is not None
+        and response.status_code in extend_allowed_response_codes
+    ):
+        return
+
     if not response.is_error:
         return
 

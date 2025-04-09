@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, Secret
 
 from exp_coord.core.annotations.s3i import S3IIdType
 
@@ -6,13 +6,14 @@ from exp_coord.core.annotations.s3i import S3IIdType
 class PersonIdentity(BaseModel):
     username: str
     identifier: S3IIdType
+    password: Secret[str] | None = None
 
 
 class ThingIdentity(BaseModel):
     identifier: S3IIdType
-    secret: str  # TODO: Add a validator here
+    secret: Secret[str]  # TODO: Add a validator here
 
 
-class CreatePersonResponse(BaseModel):
+class FullIdentity(BaseModel):
     person: PersonIdentity = Field(alias="personIdentity")
     thing: ThingIdentity = Field(alias="thingIdentity")

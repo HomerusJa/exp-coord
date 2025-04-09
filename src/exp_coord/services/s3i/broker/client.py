@@ -28,10 +28,10 @@ class S3IBrokerClient(BaseS3IClient):
         Returns:
             Optional[S3IMessage]: The received message, if received.
         """
-        content = await self._send_request("GET", f"/{self.settings.message_queue}")
-        if len(content) == 0:
+        response = await self._send_request("GET", f"/{self.settings.message_queue}")
+        if len(response.content) == 0:
             return None
-        _get_type_adapter(S3IMessage).validate_json(content)
+        _get_type_adapter(S3IMessage).validate_json(response.content)
 
     async def receive_all_messages(self) -> list[S3IMessage]:
         """Receive all messages from the S³I Broker.
@@ -42,8 +42,8 @@ class S3IBrokerClient(BaseS3IClient):
         Returns:
             list[S3IMessage]: The received messages.
         """
-        content = await self._send_request("GET", f"/{self.settings.message_queue}/all")
-        return _get_type_adapter(list[S3IMessage]).validate_json(content)
+        response = await self._send_request("GET", f"/{self.settings.message_queue}/all")
+        return _get_type_adapter(list[S3IMessage]).validate_json(response.content)
 
     async def receive_event(self) -> S3IEvent | None:
         """Receive an event from the S³I Broker.
@@ -54,10 +54,10 @@ class S3IBrokerClient(BaseS3IClient):
         Returns:
             Optional[S3IEvent]: The received event, if received.
         """
-        content = await self._send_request("GET", f"/{self.settings.event_queue}")
-        if len(content) == 0:
+        response = await self._send_request("GET", f"/{self.settings.event_queue}")
+        if len(response.content) == 0:
             return None
-        _get_type_adapter(S3IEvent).validate_json(content)
+        _get_type_adapter(S3IEvent).validate_json(response.content)
 
     async def receive_all_events(self) -> list[S3IEvent]:
         """Receive all events from the S³I Broker.
@@ -68,8 +68,8 @@ class S3IBrokerClient(BaseS3IClient):
         Returns:
             list[S3IEvent]: The received events.
         """
-        content = await self._send_request("GET", f"/{self.settings.event_queue}/all")
-        return _get_type_adapter(list[S3IEvent]).validate_json(content)
+        response = await self._send_request("GET", f"/{self.settings.event_queue}/all")
+        return _get_type_adapter(list[S3IEvent]).validate_json(response.content)
 
     @validate_call
     async def send_message(
