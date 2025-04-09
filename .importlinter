@@ -12,3 +12,24 @@ layers =
     core
 containers =
     exp_coord
+
+[importlinter:contract:s3i-layers]
+name = Specific layers of the S3I service
+type = layers
+layers =
+    broker | config
+    base
+
+containers =
+    exp_coord.services.s3i
+
+[importlinter:contracts:s3i-client-implementation-layers]
+name = The layers in the specific S3I client implementations
+type = layers
+layers =
+    # Add __init__.py here
+    client
+    models
+containers =
+    exp_coord.services.s3i.broker
+    exp_coord.services.s3i.config
