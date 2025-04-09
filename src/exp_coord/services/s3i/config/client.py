@@ -25,7 +25,7 @@ class S3IConfigClient(BaseS3IClient):
             "/persons/",
             json={"username": username, "password": password},
         )
-        return FullIdentity.model_validate_json(response)
+        return FullIdentity.model_validate_json(response.content)
 
     async def query_person(self, username: str) -> FullIdentity | None:
         response = await self._send_request(
