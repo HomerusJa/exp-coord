@@ -2,7 +2,7 @@
 root_package = exp_coord
 
 [importlinter:contract:layers]
-name = Basic layer contract
+name = Core Application Layering Contract
 type = layers
 layers =
     cli
@@ -14,20 +14,19 @@ containers =
     exp_coord
 
 [importlinter:contract:s3i-layers]
-name = Specific layers of the S3I service
+name = S3I Service Layering Contract
 type = layers
 layers =
     broker | config
     base
-
 containers =
     exp_coord.services.s3i
 
 [importlinter:contracts:s3i-client-implementation-layers]
-name = The layers in the specific S3I client implementations
+name = S3I Client Implementation Layering Contract
 type = layers
 layers =
-    # Add __init__.py here
+    # Add __init__.py here if applicable
     client
     models
 containers =
