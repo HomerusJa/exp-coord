@@ -15,6 +15,9 @@ class Handler(Generic[T]):
     predicate: Callable[[T], bool]
     handle: Callable[[T], Awaitable[None]]
 
+    def __str__(self) -> str:
+        return self.name
+
 
 class Processor(Generic[T]):
     """Generic message processor that can handle any type of message."""
@@ -29,10 +32,9 @@ class Processor(Generic[T]):
 
         if not matching:
             logger.warning(f"No handlers found for message: {message}")
-        elif len(matching) > 1:
-            logger.warning(
-                f"Multiple handlers found for message: {message}. "
-                f"Handlers: {', '.join(h.name for h in matching)}"
+        else:
+            logger.debug(
+                f"Found {len(matching)} handlers ({', '.join(map(str, matching))}) for message: {message}"
             )
 
         return matching

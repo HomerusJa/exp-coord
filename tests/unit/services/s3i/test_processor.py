@@ -56,9 +56,7 @@ def test_logs(logot: Logot):
 
     assert processor.find_handlers("test1") == handlers
     logot.assert_logged(
-        logged.warning(
-            "Multiple handlers found for message: test1. Handlers: test1_handler1, test1_handler2"
-        )
+        logged.debug("Found 2 handlers (test1_handler1, test1_handler2) for message: test1")
     )
     assert processor.find_handlers("test2") == []
     logot.assert_logged(logged.warning("No handlers found for message: test2"))
