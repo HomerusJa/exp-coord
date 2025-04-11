@@ -19,7 +19,6 @@ dependencies = [
   "loguru>=0.7.3",
   "pydantic>=2.10.4",
   "pydantic-settings>=2.7.1",
-  "pyright>=1.1.399",
   "typer>=0.15.1",
 ]
 
@@ -41,6 +40,11 @@ lint = [
   "ruff>=0.9.1",
   "types-toml>=0.10.8.20240310",
 ]
+notebook = [
+  "marimo>=0.12.8",
+  "pandas>=2.2.3",
+  "plotly>=6.0.1",
+]
 
 [tool.ruff]
 target-version = "py313"
@@ -49,6 +53,7 @@ exclude = [
   ".pdm-build",
   ".venv",
   "htmlcov",
+  "notebooks",
 ]
 
 format.indent-style = "space"
@@ -126,4 +131,4 @@ include = [ "src", "tests" ]
 reportMissingTypeStubs = true
 
 [tool.uv]
-default-groups = [ "test", "lint" ]
+default-groups = "all"
