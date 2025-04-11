@@ -11,12 +11,12 @@ class ErrorSchema(BaseModel):
 class S3IError(Exception):
     """S3I error."""
 
-    def __init__(self, response: Response, error: ErrorSchema | None) -> None:
+    def __init__(self, response: Response, error: ErrorSchema | bytes | None) -> None:
         self.response = response
-        self.error = error if error else ErrorSchema(error_message="Unknown error")
+        self.error = error if error else "Unknown error"
 
     def __str__(self) -> str:
-        return f"[{self.response.status_code}]: {self.error.error}"
+        return f"[{self.response.status_code}]: {self.error}"
 
 
 async def raise_on_error(
@@ -35,5 +35,5 @@ async def raise_on_error(
     try:
         error = ErrorSchema.model_validate_json(response.content)
     except ValidationError:
-        error = None
+        error = response.content or None
     raise S3IError(response, error)

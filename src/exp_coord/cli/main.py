@@ -7,7 +7,6 @@ from exp_coord.core.log import setup_logging
 app = typer.Typer(
     help="Your friendly CLI interface for the experiment coordinator.",
     no_args_is_help=True,
-    pretty_exceptions_enable=False,
 )
 
 
