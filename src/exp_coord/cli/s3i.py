@@ -46,7 +46,8 @@ async def send_message(endpoint: str, content: str) -> None:
     """Send a message to the message queue."""
     settings = get_settings().s3i
     async with S3IBrokerClient(settings) as client:
-        await client.send_message(content, endpoint=endpoint)
+        # FIXME: Check whether validate_call really converts content from a string
+        await client.send_message(endpoint=endpoint, message=content)  # type: ignore[reportArgumentType]
 
 
 @event_app.command("get")
@@ -65,7 +66,8 @@ async def send_event(content: str) -> None:
     """Send an event to the event queue."""
     settings = get_settings().s3i
     async with S3IBrokerClient(settings) as client:
-        await client.send_event(content)
+        # FIXME: Check whether validate_call really converts content from a string
+        await client.send_event(content)  # type: ignore[reportArgumentType]
 
 
 @event_app.command("add-topic")
