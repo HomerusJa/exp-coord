@@ -1,6 +1,7 @@
 from typing import Any, AsyncIterable, Iterable
 
 import httpx
+from loguru import logger
 
 from exp_coord.core.config import S3ISettings
 from exp_coord.services.s3i.base.auth import KeycloakAuth
@@ -43,6 +44,7 @@ class BaseS3IClient:
         *,
         content: str | bytes | Iterable[bytes] | AsyncIterable[bytes] | None = None,
         extend_allowed_response_codes: list[int] | None = None,
+        log_response: bool = True,
         **extra_request_kwargs: Any,
     ) -> httpx.Response:
         """Send a  request to the specified endpoint and deserialize the response.
@@ -58,11 +60,13 @@ class BaseS3IClient:
             **extra_request_kwargs: Extra kwargs passed to httpx.AsyncClient.request()
 
         Returns:
-            `T` if `response_adapter` is provided.
+            The raw httpx.Response object.
         """
         response = await self.client.request(
             method, endpoint, content=content, **extra_request_kwargs
         )
         await raise_on_error(response, extend_allowed_response_codes)
 
+        if log_response:
+            logger.debug(f"Received response: {response.content}")
         return response

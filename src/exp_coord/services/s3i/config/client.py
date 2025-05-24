@@ -1,6 +1,8 @@
 from loguru import logger
+from pydantic import validate_call
 
 from exp_coord.core.config import S3ISettings
+from exp_coord.services.s3i.base.annotations import S3IIdType
 from exp_coord.services.s3i.base.client import BaseS3IClient
 from exp_coord.services.s3i.config.models import FullIdentity
 
@@ -23,6 +25,7 @@ class S3IConfigClient(BaseS3IClient):
         response = await self._send_request(
             "POST",
             "/persons/",
+            log_response=False,  # Raw secret is sent in response
             json={"username": username, "password": password},
         )
         return FullIdentity.model_validate_json(response.content)
@@ -38,6 +41,27 @@ class S3IConfigClient(BaseS3IClient):
     async def delete_person(self, username: str):
         _ = await self._send_request("DELETE", f"/persons/{username}")
 
+    @validate_call
+    async def create_thing_event_queue(
+        self, thing_id: S3IIdType, topic: str, queue_length: int = 0, ttl: int = 0
+    ):
+        _ = await self._send_request(
+            "POST",
+            f"/things/{thing_id}/event-queues",
+            json={"topic": topic, "queue_length": queue_length, "ttl": ttl},
+        )
+
+    @validate_call
+    async def delete_thing_event_queue(self, thing_id: S3IIdType) -> None:
+        _ = await self._send_request("DELETE", f"/things/{thing_id}/broker/event")
+
+    @validate_call
+    async def add_thing_event_topics(self, thing_id: S3IIdType, topic: str) -> None:
+        # TODO: Check if multiple topics are allowed
+        _ = await self._send_request(
+            "POST", f"/things/{thing_id}/broker/event", json={"topic": [topic]}
+        )
+
     # Missing endpoints:
     # POST /things/
     # GET /things/{thingId}
@@ -47,6 +71,3 @@ class S3IConfigClient(BaseS3IClient):
     # DELETE /things/{thingId}/repository
     # POST /things/{thingId}/broker
     # DELETE /things/{thingId}/broker
-    # POST /things/{thingId}/broker/event
-    # PUT /things/{thingId}/broker/event
-    # DELETE /things/{thingId}/broker/event
