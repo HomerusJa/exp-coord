@@ -37,3 +37,16 @@ class S3IConfigClient(BaseS3IClient):
 
     async def delete_person(self, username: str):
         _ = await self._send_request("DELETE", f"/persons/{username}")
+
+    # Missing endpoints:
+    # POST /things/
+    # GET /things/{thingId}
+    # PUT /things/{thingId}
+    # DELETE /things/{thingId}
+    # POST /things/{thingId}/repository
+    # DELETE /things/{thingId}/repository
+    # POST /things/{thingId}/broker
+    # DELETE /things/{thingId}/broker
+    # POST /things/{thingId}/broker/event
+    # PUT /things/{thingId}/broker/event
+    # DELETE /things/{thingId}/broker/event
