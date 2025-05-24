@@ -36,6 +36,10 @@ class ImageFileMetadata(GridFSFileMetadata):
 
     # Use Field with annotation to preserve parent's type signatures
     from_collection: str | None = Field(default="images")
+
+    # Again, we need to keep the type signature of the parent class. In the validator below,
+    # we ensure that from_id is set.
+    # FIXME: This is not ideal, as it destroys the type annotations.
     from_id: PydanticObjectId | None = Field(default=None)
 
     @model_validator(mode="after")

@@ -48,6 +48,8 @@ async def handle_new_image_event(event: S3IEvent) -> None:
         taken_at=datetime.fromtimestamp(content.taken_at),
         file_id=None,
     )
+    await image.insert()
+    assert image.id is not None, "Image ID is set after insertion."
     filename = await image.get_filename()
     metadata = ImageFileMetadata(from_id=image.id)
     file_id = await upload_to_gridfs(
@@ -57,7 +59,7 @@ async def handle_new_image_event(event: S3IEvent) -> None:
         bucket_name=get_settings().mongodb.collection_names.image_gridfs,
     )
     image.file_id = PydanticObjectId(file_id)
-    await image.insert()
+    await image.save()
 
 
 NewImageHandler = EventHandler(
