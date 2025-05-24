@@ -23,7 +23,7 @@ class NewImageEventContent(BaseModel):
 
     type: Literal["image/jpeg; encoding=base64url"]
     path: str
-    taken_at: int
+    taken_at: int = Field(alias="takenAt")
     image: Base64UrlBytes = Field(repr=False)
 
     @computed_field
