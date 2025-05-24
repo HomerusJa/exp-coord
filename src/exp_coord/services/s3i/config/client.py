@@ -1,8 +1,8 @@
 from loguru import logger
 from pydantic import validate_call
 
+from exp_coord.core.annotations.s3i import S3IIdType
 from exp_coord.core.config import S3ISettings
-from exp_coord.services.s3i.base.annotations import S3IIdType
 from exp_coord.services.s3i.base.client import BaseS3IClient
 from exp_coord.services.s3i.config.models import FullIdentity
 
@@ -56,10 +56,10 @@ class S3IConfigClient(BaseS3IClient):
         _ = await self._send_request("DELETE", f"/things/{thing_id}/broker/event")
 
     @validate_call
-    async def add_thing_event_topics(self, thing_id: S3IIdType, topic: str) -> None:
+    async def add_thing_event_topic(self, thing_id: S3IIdType, topic: str) -> None:
         # TODO: Check if multiple topics are allowed
         _ = await self._send_request(
-            "POST", f"/things/{thing_id}/broker/event", json={"topic": [topic]}
+            "PUT", f"/things/{thing_id}/broker/event", json={"topic": [topic]}
         )
 
     # Missing endpoints:

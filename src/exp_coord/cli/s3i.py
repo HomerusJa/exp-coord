@@ -5,11 +5,16 @@ from functools import wraps
 
 import typer
 
-from exp_coord.cli.utils import skip_execution_on_help_or_completion
 from exp_coord.core.config import get_settings
 from exp_coord.services.s3i import S3IBrokerClient
+from exp_coord.services.s3i.config import S3IConfigClient
 
 app = typer.Typer()
+message_app = typer.Typer(name="message")
+event_app = typer.Typer(name="event")
+
+app.add_typer(message_app)
+app.add_typer(event_app)
 
 
 def async_command(func):
@@ -25,43 +30,48 @@ def async_command(func):
     return wrapper
 
 
-@app.callback()
-@skip_execution_on_help_or_completion
-def startup(ctx: typer.Context) -> None:
-    """Main entry point that sets up the S3I client."""
-    ctx.ensure_object(dict)
-    ctx.obj["s3i_client"] = S3IBrokerClient(get_settings().s3i)
-
-
-@app.command()
+@message_app.command("get")
 @async_command
-async def get_message(ctx: typer.Context) -> None:
+async def get_message() -> None:
     """Get a message from the message queue."""
-    async with ctx.obj["s3i_client"] as client:
+    settings = get_settings().s3i
+    async with S3IBrokerClient(settings) as client:
         message = await client.receive_message()
         print(message)
 
 
-@app.command()
+@message_app.command("send")
 @async_command
-async def get_event(ctx: typer.Context) -> None:
+async def send_message(endpoint: str, content: str) -> None:
+    """Send a message to the message queue."""
+    settings = get_settings().s3i
+    async with S3IBrokerClient(settings) as client:
+        await client.send_message(content, endpoint=endpoint)
+
+
+@event_app.command("get")
+@async_command
+async def get_event() -> None:
     """Get an event from the event queue."""
-    async with ctx.obj["s3i_client"] as client:
+    settings = get_settings().s3i
+    async with S3IBrokerClient(settings) as client:
         event = await client.receive_event()
         print(event)
 
 
-@app.command()
+@event_app.command("send")
 @async_command
-async def send_message(ctx: typer.Context, endpoint: str, content: str) -> None:
-    """Send a message to the message queue."""
-    async with ctx.obj["s3i_client"] as client:
-        await client.send_message("Hello, World!")
-
-
-@app.command()
-@async_command
-async def send_event(ctx: typer.Context, content: str) -> None:
+async def send_event(content: str) -> None:
     """Send an event to the event queue."""
-    async with ctx.obj["s3i_client"] as client:
+    settings = get_settings().s3i
+    async with S3IBrokerClient(settings) as client:
         await client.send_event(content)
+
+
+@event_app.command("add-topic")
+@async_command
+async def add_topic(topic: str) -> None:
+    """Subscribe to a topic."""
+    settings = get_settings().s3i
+    async with S3IConfigClient(settings) as client:
+        await client.add_thing_event_topic(settings.client_id, topic)

@@ -36,47 +36,48 @@ $ exp-coord s3i [OPTIONS] COMMAND [ARGS]...
 
 **Commands**:
 
-* `get-message`: Get a message from the message queue.
-* `get-event`: Get an event from the event queue.
-* `send-message`: Send a message to the message queue.
-* `send-event`: Send an event to the event queue.
+* `message`
+* `event`
 
-### `exp-coord s3i get-message`
+### `exp-coord s3i message`
+
+**Usage**:
+
+```console
+$ exp-coord s3i message [OPTIONS] COMMAND [ARGS]...
+```
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+**Commands**:
+
+* `get`: Get a message from the message queue.
+* `send`: Send a message to the message queue.
+
+#### `exp-coord s3i message get`
 
 Get a message from the message queue.
 
 **Usage**:
 
 ```console
-$ exp-coord s3i get-message [OPTIONS]
+$ exp-coord s3i message get [OPTIONS]
 ```
 
 **Options**:
 
 * `--help`: Show this message and exit.
 
-### `exp-coord s3i get-event`
-
-Get an event from the event queue.
-
-**Usage**:
-
-```console
-$ exp-coord s3i get-event [OPTIONS]
-```
-
-**Options**:
-
-* `--help`: Show this message and exit.
-
-### `exp-coord s3i send-message`
+#### `exp-coord s3i message send`
 
 Send a message to the message queue.
 
 **Usage**:
 
 ```console
-$ exp-coord s3i send-message [OPTIONS] ENDPOINT CONTENT
+$ exp-coord s3i message send [OPTIONS] ENDPOINT CONTENT
 ```
 
 **Arguments**:
@@ -88,19 +89,69 @@ $ exp-coord s3i send-message [OPTIONS] ENDPOINT CONTENT
 
 * `--help`: Show this message and exit.
 
-### `exp-coord s3i send-event`
+### `exp-coord s3i event`
+
+**Usage**:
+
+```console
+$ exp-coord s3i event [OPTIONS] COMMAND [ARGS]...
+```
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+**Commands**:
+
+* `get`: Get an event from the event queue.
+* `send`: Send an event to the event queue.
+* `add-topic`: Subscribe to a topic.
+
+#### `exp-coord s3i event get`
+
+Get an event from the event queue.
+
+**Usage**:
+
+```console
+$ exp-coord s3i event get [OPTIONS]
+```
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+#### `exp-coord s3i event send`
 
 Send an event to the event queue.
 
 **Usage**:
 
 ```console
-$ exp-coord s3i send-event [OPTIONS] CONTENT
+$ exp-coord s3i event send [OPTIONS] CONTENT
 ```
 
 **Arguments**:
 
 * `CONTENT`: [required]
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+#### `exp-coord s3i event add-topic`
+
+Subscribe to a topic.
+
+**Usage**:
+
+```console
+$ exp-coord s3i event add-topic [OPTIONS] TOPIC
+```
+
+**Arguments**:
+
+* `TOPIC`: [required]
 
 **Options**:
 
