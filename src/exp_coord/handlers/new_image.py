@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import Literal
 
 from beanie import PydanticObjectId
-from pydantic import Base64UrlBytes, BaseModel, computed_field
+from pydantic import Base64UrlBytes, BaseModel, Field, computed_field
 
 from exp_coord.core.config import get_settings
 from exp_coord.db.device import get_device_by_s3i_id
@@ -24,7 +24,7 @@ class NewImageEventContent(BaseModel):
     type: Literal["image/jpeg; encoding=base64url"]
     path: str
     taken_at: int
-    image: Base64UrlBytes
+    image: Base64UrlBytes = Field(repr=False)
 
     @computed_field
     def taken_at_datetime(self) -> datetime:
