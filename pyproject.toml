@@ -41,6 +41,7 @@ lint = [
   "types-toml>=0.10.8.20240310",
 ]
 notebook = [
+  "devtools>=0.12.2",
   "marimo>=0.12.8",
   "pandas>=2.2.3",
   "plotly>=6.0.1",
