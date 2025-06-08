@@ -1,40 +1,52 @@
 import inspect
 import logging
+import weakref
 
 import structlog
 
 __all__ = ["setup_logging"]
 
 
+# TODO: Maybe change this to be logging.getLogger("pymongo").setLevel(logging.WARNING) and so on
 class LibraryLogFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
         # Use the fully qualified module path if available, else fallback to logger name
         module = getattr(record, "module", None)
         name = getattr(record, "name", "")
-        return (
+        return not (
             (module and (module.startswith("pymongo") or module.startswith("httpcore")))
             or name.startswith("pymongo")
             or name.startswith("httpcore")
         )
 
 
-def add_module_path(_, __, event_dict):
-    # Walk the stack to find the first frame outside structlog/logging internals
-    if event_dict.get("module"):
-        raise RuntimeError("module key already exists in event dict")
+_module_path_cache = weakref.WeakKeyDictionary()
 
+
+def add_module_path(_, __, event_dict):
+    """Add the module_path to the event dictionary.
+
+    !!! warning
+        This is not thread-safe because of the use of a WeakKeyDictionary. If
+        this becomes an issue, use a threading.RLock.
+    """
     frame = inspect.currentframe()
     while frame:
         module = inspect.getmodule(frame)
-        # Skip frames from structlog and logging
         if (
             module
             and not module.__name__.startswith(("structlog", "logging"))
             and module.__name__ != "exp_coord.core.log"
         ):
-            event_dict["module"] = module.__name__
+            code = frame.f_code  # The function's code object, suitable for weak refs
+            if code in _module_path_cache:
+                event_dict["module"] = _module_path_cache[code]
+            else:
+                _module_path_cache[code] = module.__name__
+                event_dict["module"] = module.__name__
             break
         frame = frame.f_back
+
     return event_dict
 
 
@@ -77,5 +89,5 @@ def setup_logging():
     handler.addFilter(LibraryLogFilter())
 
     root_logger = logging.getLogger()
-    root_logger.addHandler(handler)
+    root_logger.handlers = [handler]  # Ensure this is the only handler
     root_logger.setLevel(logging.DEBUG)
