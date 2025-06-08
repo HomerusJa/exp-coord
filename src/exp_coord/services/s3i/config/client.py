@@ -1,10 +1,12 @@
-from loguru import logger
 from pydantic import validate_call
+from structlog.stdlib import get_logger
 
 from exp_coord.core.annotations.s3i import S3IIdType
 from exp_coord.core.config import S3ISettings
 from exp_coord.services.s3i.base.client import BaseS3IClient
 from exp_coord.services.s3i.config.models import FullIdentity
+
+logger = get_logger(__name__)
 
 
 class S3IConfigClient(BaseS3IClient):

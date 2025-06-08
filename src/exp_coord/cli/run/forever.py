@@ -2,13 +2,15 @@ import asyncio
 from time import sleep
 
 import typer
-from loguru import logger
+from structlog.stdlib import get_logger
 
 from exp_coord.services.s3i import (
     EventProcessor,
     MessageProcessor,
     S3IBrokerClient,
 )
+
+logger = get_logger(__name__)
 
 
 def forever(ctx: typer.Context, interval: int = 60, exit_on_failure: bool = True) -> None:
@@ -20,11 +22,6 @@ def forever(ctx: typer.Context, interval: int = 60, exit_on_failure: bool = True
     message_processor: MessageProcessor = ctx.obj["message_processor"]
     async_runner: asyncio.Runner = ctx.obj["async_runner"]
 
-    @logger.catch(
-        message="An error occurred during the current processing cycle",
-        level="ERROR",
-        reraise=exit_on_failure,
-    )
     async def cycle():
         logger.info("Receiving all messages and events...")
         messages, events = await asyncio.gather(
@@ -35,9 +32,14 @@ def forever(ctx: typer.Context, interval: int = 60, exit_on_failure: bool = True
         await asyncio.gather(
             message_processor.process_all(messages), event_processor.process_all(events)
         )
-        logger.success("Finished a cycle without errors.")
+        logger.info("Finished a cycle without errors.")
 
     while True:
-        async_runner.run(cycle())
-        logger.trace(f"Sleeping for {interval} seconds...")
+        try:
+            async_runner.run(cycle())
+        except:  # noqa: E722
+            logger.error("An error occurred during the current processing cycle.", exc_info=True)
+            if exit_on_failure:
+                raise
+        logger.debug(f"Sleeping for {interval} seconds...")
         sleep(interval)

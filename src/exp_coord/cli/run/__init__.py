@@ -1,10 +1,12 @@
 import typer
-from loguru import logger
+from structlog.stdlib import get_logger
 
 from .all import all_app
 from .forever import forever
 from .setup import startup
 from .single import single_app
+
+logger = get_logger(__name__)
 
 app = typer.Typer()
 app.callback()(startup)

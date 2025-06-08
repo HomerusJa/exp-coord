@@ -11,9 +11,8 @@ app = typer.Typer(
 
 
 @app.callback()
-def setup(level: str = "DEBUG"):
-    print(f"Running setup, {level=}")
-    setup_logging(level)
+def setup():
+    setup_logging()
 
 
 app.add_typer(

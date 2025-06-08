@@ -3,13 +3,15 @@
 from datetime import datetime
 from typing import Literal
 
-from loguru import logger
 from pydantic import BaseModel
+from structlog.stdlib import get_logger
 
 from exp_coord.core.config import get_settings
 from exp_coord.db.device import get_device_by_s3i_id
 from exp_coord.db.status import Status
 from exp_coord.services.s3i import EventHandler, S3IEvent
+
+logger = get_logger(__name__)
 
 
 def is_status_event(event: S3IEvent) -> bool:
@@ -41,7 +43,7 @@ async def handle_status_event(event: S3IEvent) -> None:
         sent_timestamp=datetime.fromtimestamp(event.timestamp),
     )
     await status.insert()
-    logger.success(f"Status event saved: {status}")
+    logger.info(f"Status event saved: {status}")
 
 
 StatusHandler = EventHandler(

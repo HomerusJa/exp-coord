@@ -3,7 +3,9 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
 import httpx
-from loguru import logger
+from structlog.stdlib import get_logger
+
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -60,7 +62,7 @@ class KeycloakAuth(httpx.Auth):
         response.raise_for_status()
         token_data = response.json()
 
-        logger.success("Got an initial token.")
+        logger.info("Got an initial token.")
 
         return TokenData(
             access_token=token_data["access_token"],
@@ -81,7 +83,7 @@ class KeycloakAuth(httpx.Auth):
         response.raise_for_status()
         token_data = response.json()
 
-        logger.success("Refreshed token.")
+        logger.info("Refreshed token.")
 
         return TokenData(
             access_token=token_data["access_token"],
@@ -106,7 +108,7 @@ class KeycloakAuth(httpx.Auth):
                 # If refresh fails, try getting a new token
                 self._token_data = await self.get_new_token()
 
-        logger.success("Got a valid token.")
+        logger.info("Got a valid token.")
         return self._token_data.access_token
 
     async def async_auth_flow(

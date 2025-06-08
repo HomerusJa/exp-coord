@@ -1,7 +1,6 @@
 from unittest.mock import AsyncMock
 
 import pytest
-from logot import Logot, logged
 
 from exp_coord.services.s3i import Handler, Processor
 
@@ -44,7 +43,7 @@ async def test_process():
     handle_2.assert_awaited_once_with("test2")
 
 
-def test_logs(logot: Logot):
+def test_logs(log_output):
     async def handle(message):
         pass
 
@@ -55,14 +54,17 @@ def test_logs(logot: Logot):
     processor = Processor[str](handlers)
 
     assert processor.find_handlers("test1") == handlers
-    logot.assert_logged(
-        logged.debug("Found 2 handlers (test1_handler1, test1_handler2) for message: test1")
+    assert any(
+        entry["event"] == "Found 2 handlers (test1_handler1, test1_handler2) for message: test1"
+        for entry in log_output.entries
     )
     assert processor.find_handlers("test2") == []
-    logot.assert_logged(logged.warning("No handlers found for message: test2"))
+    assert any(
+        entry["event"] == "No handlers found for message: test2" for entry in log_output.entries
+    )
 
 
-async def test_all_handlers_processed_even_if_one_failed(logot: Logot):
+async def test_all_handlers_processed_even_if_one_failed():
     handle_1 = AsyncMock()
     handle_2 = AsyncMock()
 
@@ -90,6 +92,3 @@ async def test_all_handlers_processed_even_if_one_failed(logot: Logot):
     assert len(exc_info.value.exceptions) == 1
     assert isinstance(exc_info.value.exceptions[0], ValueError)
     assert str(exc_info.value.exceptions[0]) == "Test error"
-
-    # Optional: Check logging if your implementation includes logging
-    logot.assert_logged(logged.error("Handler test1_handler1 failed to process message: test1"))

@@ -1,11 +1,13 @@
 from typing import Any, AsyncIterable, Iterable
 
 import httpx
-from loguru import logger
+from structlog.stdlib import get_logger
 
 from exp_coord.core.config import S3ISettings
 from exp_coord.services.s3i.base.auth import KeycloakAuth
 from exp_coord.services.s3i.base.error import raise_on_error
+
+logger = get_logger(__name__)
 
 
 def _create_auth_from_settings(client: httpx.AsyncClient, settings: S3ISettings) -> KeycloakAuth:

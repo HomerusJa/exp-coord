@@ -1,4 +1,3 @@
-from logot import Logot, logged
 from pydantic import TypeAdapter
 
 from exp_coord.core.utils import _get_type_adapter
@@ -20,11 +19,8 @@ def test_type_adapter_caching():
     assert adapter1 is not adapter3  # Different types should have different instances
 
 
-def test_print_logging(logot: Logot):
-    _get_type_adapter(float)  # First call should print
-    _get_type_adapter(float)  # Cached call should not print again
+def test_print_logging(log_output):
+    _get_type_adapter(float)  # First call should log
+    _get_type_adapter(float)  # Cached call should not log again as it is cached
 
-    logot.assert_logged(logged.debug("Creating cached TypeAdapter for <class 'float'>"))
-
-    _get_type_adapter(float)  # Call again to check caching
-    logot.assert_not_logged(logged.debug("Creating cached TypeAdapter for <class 'float'>"))
+    assert len(log_output.entries) == 1

@@ -1,8 +1,10 @@
 from functools import cache
 from typing import TypeVar
 
-from loguru import logger
 from pydantic import TypeAdapter
+from structlog.stdlib import get_logger
+
+logger = get_logger(__name__)
 
 T = TypeVar("T")
 

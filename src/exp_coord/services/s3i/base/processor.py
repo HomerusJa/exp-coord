@@ -2,8 +2,9 @@ import asyncio
 from dataclasses import dataclass
 from typing import Awaitable, Callable, Generic, Sequence, TypeVar
 
-from loguru import logger
+from structlog.stdlib import get_logger
 
+logger = get_logger(__name__)
 T = TypeVar("T")
 
 
@@ -53,8 +54,8 @@ class Processor(Generic[T]):
 
             try:
                 await handler.handle(message)
-                logger.success(f"Handler {handler.name} successfully processed message: {message}")
-            except Exception as exc:  # noqa: BLE001
+                logger.info(f"Handler {handler.name} successfully processed message: {message}")
+            except Exception as exc:
                 exceptions.append(exc)
                 logger.exception(f"Handler {handler.name} failed to process message: {message}")
         if exceptions:

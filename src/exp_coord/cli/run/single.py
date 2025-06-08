@@ -1,9 +1,11 @@
 import asyncio
 
 import typer
-from loguru import logger
+from structlog.stdlib import get_logger
 
 from exp_coord.services.s3i import EventProcessor, MessageProcessor, S3IBrokerClient
+
+logger = get_logger(__name__)
 
 single_app = typer.Typer(
     help="Run the message processing pipeline a single time.", no_args_is_help=True, name="single"

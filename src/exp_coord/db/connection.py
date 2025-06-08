@@ -1,18 +1,20 @@
 import asyncio
 
 from beanie import init_beanie
-from loguru import logger
 from motor.motor_asyncio import (
     AsyncIOMotorClient,
     AsyncIOMotorDatabase,
     AsyncIOMotorGridFSBucket,
 )
+from structlog.stdlib import get_logger
 
 from exp_coord.core.config import get_settings
 from exp_coord.db.all_messages_and_events import AllMessagesAndEvents
 from exp_coord.db.device import Device
 from exp_coord.db.image import Image
 from exp_coord.db.status import Status
+
+logger = get_logger(__name__)
 
 __models__ = [
     AllMessagesAndEvents,
@@ -81,12 +83,12 @@ async def init_db() -> None:
     )
     __client = _create_client()
 
-    logger.trace("Pinging the database to ensure the connection is successful")
+    logger.debug("Pinging the database to ensure the connection is successful")
     await get_client().admin.command("ping")
-    logger.success("Database connection established")
+    logger.info("Database connection established")
 
     await init_beanie(get_db(), document_models=__models__)
-    logger.success("Beanie initialized")
+    logger.info("Beanie initialized")
 
 
 async def close_db() -> None:
@@ -96,9 +98,9 @@ async def close_db() -> None:
     global __client
 
     if __client is None:
-        logger.trace("Database connection already closed")
+        logger.debug("Database connection already closed")
         return
 
     __client.close()
     __client = None
-    logger.success("Database connection closed")
+    logger.info("Database connection closed")

@@ -92,7 +92,3 @@ As an ODM, I am using [**Beanie**](https://beanie-odm.dev/), an async MongoDB OD
 S3I is a protocol for secure communication between IoT devices and the cloud. It is programmed and hosted by **KWH4.0** (Kompetenzzentrum Wald und Holz 4.0). More information can be found [here](https://kwh40.pages.rwth-aachen.de/s3i/).
 
 In this project, S3I is used to allow communications between the different devices like the cameras or the water supply and the coordinator (this application).
-
-### 📝 Logging
-
-For logging, we are using [**loguru**](https://loguru.readthedocs.io/en/stable/), intercepting the standard logging module to also capture logs from third-party libraries. This works great, as loguru is just a great library.
