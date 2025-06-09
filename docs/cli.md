@@ -172,26 +172,10 @@ $ exp-coord run [OPTIONS] COMMAND [ARGS]...
 
 **Commands**:
 
-* `forever`: Start the experiment coordinator and run...
 * `test`: Run a test to check if setup and teardown...
 * `all`: Run the specified pipeline until all...
 * `single`: Run the message processing pipeline a...
-
-### `exp-coord run forever`
-
-Start the experiment coordinator and run it forever, or until the messages ran out.
-
-**Usage**:
-
-```console
-$ exp-coord run forever [OPTIONS]
-```
-
-**Options**:
-
-* `--interval INTEGER`: [default: 60]
-* `--exit-on-failure / --no-exit-on-failure`: [default: exit-on-failure]
-* `--help`: Show this message and exit.
+* `forever`: Start the experiment coordinator and run...
 
 ### `exp-coord run test`
 
@@ -299,4 +283,20 @@ $ exp-coord run single event [OPTIONS]
 
 **Options**:
 
+* `--help`: Show this message and exit.
+
+### `exp-coord run forever`
+
+Start the experiment coordinator and run it forever, or until the messages run out.
+
+**Usage**:
+
+```console
+$ exp-coord run forever [OPTIONS] COMMAND [ARGS]...
+```
+
+**Options**:
+
+* `--interval INTEGER`: [default: 60]
+* `--exit-on-failure / --no-exit-on-failure`: [default: exit-on-failure]
 * `--help`: Show this message and exit.

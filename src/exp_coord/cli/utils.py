@@ -11,7 +11,7 @@ def skip_execution_on_help_or_completion(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         ctx = click.get_current_context()
-        if ctx.invoked_subcommand is not None or "--help" in ctx.args:
+        if ctx.invoked_subcommand is None or "--help" in ctx.args:
             return
         return func(*args, **kwargs)
 

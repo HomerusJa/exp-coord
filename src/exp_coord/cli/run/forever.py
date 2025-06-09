@@ -12,9 +12,15 @@ from exp_coord.services.s3i import (
 
 logger = get_logger(__name__)
 
+forever_app = typer.Typer(
+    name="forever",
+    invoke_without_command=True,
+)
 
+
+@forever_app.callback()
 def forever(ctx: typer.Context, interval: int = 60, exit_on_failure: bool = True) -> None:
-    """Start the experiment coordinator and run it forever, or until the messages ran out."""
+    """Start the experiment coordinator and run it forever, or until the messages run out."""
     logger.info("Starting experiment coordinator...")
 
     broker_client: S3IBrokerClient = ctx.obj["broker_client"]

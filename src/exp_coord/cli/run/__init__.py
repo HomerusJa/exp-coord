@@ -2,7 +2,7 @@ import typer
 from structlog.stdlib import get_logger
 
 from .all import all_app
-from .forever import forever
+from .forever import forever_app
 from .setup import startup
 from .single import single_app
 
@@ -13,7 +13,7 @@ app.callback()(startup)
 
 app.add_typer(all_app)
 app.add_typer(single_app)
-app.command()(forever)
+app.add_typer(forever_app)
 
 
 @app.command()
