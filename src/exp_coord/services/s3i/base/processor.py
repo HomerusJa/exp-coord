@@ -29,7 +29,7 @@ class Processor(Generic[T]):
 
     def find_handlers(self, message: T) -> list[Handler[T]]:
         """Find handlers that can process the message."""
-        message_logger = logger.bind(message=message)
+        message_logger = logger.bind(content=message)
         matching = [h for h in self._handlers if h.predicate(message)]
 
         if not matching:
@@ -47,7 +47,7 @@ class Processor(Generic[T]):
         Raises:
             ExceptionGroup: If any error occurred during processing from one of the handlers.
         """
-        message_logger = logger.bind(message=message)
+        message_logger = logger.bind(content=message)
         handlers = self.find_handlers(message)
 
         exceptions: list[Exception] = []
