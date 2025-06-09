@@ -29,13 +29,14 @@ class Processor(Generic[T]):
 
     def find_handlers(self, message: T) -> list[Handler[T]]:
         """Find handlers that can process the message."""
+        message_logger = logger.bind(message=message)
         matching = [h for h in self._handlers if h.predicate(message)]
 
         if not matching:
-            logger.warning(f"No handlers found for message: {message}")
+            message_logger.warning("No handlers found")
         else:
-            logger.debug(
-                f"Found {len(matching)} handlers ({', '.join(map(str, matching))}) for message: {message}"
+            message_logger.debug(
+                f"Found {len(matching)} handlers ({', '.join(map(str, matching))})"
             )
 
         return matching
@@ -46,22 +47,21 @@ class Processor(Generic[T]):
         Raises:
             ExceptionGroup: If any error occurred during processing from one of the handlers.
         """
+        message_logger = logger.bind(message=message)
         handlers = self.find_handlers(message)
 
         exceptions: list[Exception] = []
         for handler in handlers:
-            logger.debug(f"Handler {handler.name} started processing message: {message}")
+            message_logger.debug("Handler started processing", handler=handler.name)
 
             try:
                 await handler.handle(message)
-                logger.info(f"Handler {handler.name} successfully processed message: {message}")
+                message_logger.info("Handler finished successfully", handler=handler.name)
             except Exception as exc:
                 exceptions.append(exc)
-                logger.exception(f"Handler {handler.name} failed to process message: {message}")
+                message_logger.exception("Handler failed to process message", handler=handler.name)
         if exceptions:
-            raise ExceptionGroup(
-                f"The message <{message}> (partially) failed to process", exceptions
-            )
+            raise ExceptionGroup("The message (partially) failed to process", exceptions)
 
     async def process_all(self, messages: Sequence[T]) -> None:
         """Process all messages concurrently. This also merges all the ExceptionGroups into one."""

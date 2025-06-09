@@ -43,7 +43,6 @@ def get_client() -> AsyncIOMotorClient:
 
 def get_db() -> AsyncIOMotorDatabase:
     """Get the database, raising a RuntimeError if the client is not initialized."""
-    logger.debug(f"{get_settings()=}")
     return get_client()[get_settings().mongodb.db_name]
 
 

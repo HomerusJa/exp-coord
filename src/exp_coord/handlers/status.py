@@ -43,7 +43,7 @@ async def handle_status_event(event: S3IEvent) -> None:
         sent_timestamp=datetime.fromtimestamp(event.timestamp),
     )
     await status.insert()
-    logger.info(f"Status event saved: {status}")
+    logger.info("Status event saved", event=status)
 
 
 StatusHandler = EventHandler(

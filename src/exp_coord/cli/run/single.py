@@ -25,7 +25,7 @@ def message(ctx: typer.Context) -> None:
         logger.debug("Fetching one message")
         message = await broker_client.receive_message()
         if message is not None:
-            logger.debug(f"Processing message: {message}")
+            logger.debug("Processing message", message=message)
 
             await message_processor.process(message)
         else:
@@ -47,7 +47,7 @@ def event(ctx: typer.Context) -> None:
         logger.debug("Fetching one event")
         event = await broker_client.receive_event()
         if event is not None:
-            logger.debug(f"Processing event: {event}")
+            logger.debug("Processing event", event=event)
 
             await event_processor.process(event)
         else:

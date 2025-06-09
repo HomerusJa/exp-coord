@@ -70,5 +70,5 @@ class BaseS3IClient:
         await raise_on_error(response, extend_allowed_response_codes)
 
         if log_response:
-            logger.debug(f"Received response: {response.content}")
+            logger.debug("Received response", response=response.content)
         return response
