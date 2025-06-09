@@ -19,6 +19,48 @@ class LibraryLogFilter(logging.Filter):
         )
 
 
+def field_to_str(field_name: str) -> structlog.typing.Processor:
+    """Convert the given field to a string, using various conversion methods.
+
+    Conversion rules:
+    - str: left unchanged
+    - bytes, bytearray: decoded to UTF-8 string (with errors replaced)
+    - pydantic.BaseModel: converted to JSON string via `.model_dump_json()`
+    - default: converted to string via `str()`
+    """
+
+    def processor(_, __, event_dict: structlog.typing.EventDict) -> structlog.typing.EventDict:
+        content = event_dict.get(field_name, None)
+        if content is not None:
+            match content:
+                case str():
+                    pass  # Already a string, do nothing
+                case (bytes() | bytearray()) as b:
+                    content = b.decode("utf-8", errors="replace")
+                case model if hasattr(model, "model_dump_json") and callable(model.model_dump_json):
+                    # For Pydantic models or similar
+                    content = model.model_dump_json()
+                case _:
+                    content = str(content)
+            event_dict[field_name] = content
+        return event_dict
+
+    return processor
+
+
+def truncate_long_field(field_name: str, max_len: int) -> structlog.typing.Processor:
+    """Create a processor that truncates `field_name` if it is longer than `max_len` and a string."""
+
+    def processor(_, __, event_dict: structlog.typing.EventDict) -> structlog.typing.EventDict:
+        content = event_dict.get(field_name, None)
+        if isinstance(content, str) and len(content) > max_len:
+            content = content[:max_len] + "..."
+            event_dict[field_name] = content
+        return event_dict
+
+    return processor
+
+
 def add_callsite(_, __, event_dict: structlog.typing.EventDict) -> structlog.typing.EventDict:
     """Add the callsite to the event dictionary.
 
@@ -46,6 +88,8 @@ SHARED_PROCESSORS = [
     ),
     add_callsite,
     structlog.processors.format_exc_info,
+    field_to_str("content"),
+    truncate_long_field("content", max_len=500),
 ]
 
 
