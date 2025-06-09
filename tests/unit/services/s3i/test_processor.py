@@ -54,13 +54,19 @@ def test_logs(log_output):
     processor = Processor[str](handlers)
 
     assert processor.find_handlers("test1") == handlers
+    print(log_output.entries)
     assert any(
-        entry["event"] == "Found 2 handlers (test1_handler1, test1_handler2) for message: test1"
+        (
+            entry["event"] == "Found 2 handlers"
+            and entry["handlers"] == ["test1_handler1", "test1_handler2"]
+            and entry["content"] == "test1"
+        )
         for entry in log_output.entries
     )
     assert processor.find_handlers("test2") == []
     assert any(
-        entry["event"] == "No handlers found for message: test2" for entry in log_output.entries
+        (entry["event"] == "No handlers found" and entry["content"] == "test2")
+        for entry in log_output.entries
     )
 
 

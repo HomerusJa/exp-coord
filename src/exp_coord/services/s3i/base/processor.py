@@ -36,7 +36,7 @@ class Processor(Generic[T]):
             message_logger.warning("No handlers found")
         else:
             message_logger.debug(
-                f"Found {len(matching)} handlers ({', '.join(map(str, matching))})"
+                f"Found {len(matching)} handlers", handlers=list(map(str, matching))
             )
 
         return matching
