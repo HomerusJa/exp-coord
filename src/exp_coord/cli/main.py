@@ -2,6 +2,7 @@ import typer
 
 from exp_coord.cli.run import app as run_app
 from exp_coord.cli.s3i import app as s3i_app
+from exp_coord.cli.utils import skip_execution_on_help_or_completion
 from exp_coord.core.log import setup_logging
 
 app = typer.Typer(
@@ -11,6 +12,7 @@ app = typer.Typer(
 
 
 @app.callback()
+@skip_execution_on_help_or_completion
 def setup():
     setup_logging()
 

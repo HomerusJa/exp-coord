@@ -1,6 +1,5 @@
 """Various utility functions to make working with typer easier."""
 
-import sys
 from functools import wraps
 
 import click
@@ -12,7 +11,7 @@ def skip_execution_on_help_or_completion(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         ctx = click.get_current_context()
-        if ctx.resilient_parsing or any(name in sys.argv[1:] for name in ctx.help_option_names):
+        if ctx.invoked_subcommand is not None or "--help" in ctx.args:
             return
         return func(*args, **kwargs)
 
