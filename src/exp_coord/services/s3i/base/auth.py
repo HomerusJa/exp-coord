@@ -123,7 +123,7 @@ class KeycloakAuth(httpx.Auth):
         request.headers["Authorization"] = f"Bearer {token}"
         yield request
 
-    def sync_auth_flow(
+    def sync_auth_flow(  # pragma: nocover
         self, request: httpx.Request
     ) -> typing.Generator[httpx.Request, httpx.Response, None]:
         """Authentication flow for HTTPX AuthFlow protocol."""

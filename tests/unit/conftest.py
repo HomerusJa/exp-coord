@@ -4,7 +4,7 @@ import exp_coord.db.connection
 
 
 def _raises_func(exception: Exception):
-    def _raises_func(*args, **kwargs):
+    def _raises_func(*args, **kwargs):  # pragma: nocover
         raise exception
 
     return _raises_func
