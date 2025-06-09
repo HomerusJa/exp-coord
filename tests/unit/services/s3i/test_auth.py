@@ -42,7 +42,7 @@ async def test_get_new_token(respx_mock, http_client, auth_config):
     )
 
     auth = KeycloakAuth(http_client=http_client, **auth_config)
-    token_data = await auth.get_new_token()
+    token_data = await auth._get_new_token()
 
     assert token_data.access_token == "new_access_token"
     assert token_data.refresh_token == "new_refresh_token"
@@ -65,7 +65,7 @@ async def test_refresh_auth_token(respx_mock, http_client, auth_config):
     )
 
     auth = KeycloakAuth(http_client=http_client, **auth_config)
-    token_data = await auth.refresh_auth_token("test_refresh_token")
+    token_data = await auth._refresh_auth_token("test_refresh_token")
 
     assert token_data.access_token == "refreshed_access_token"
     assert token_data.refresh_token == "new_refresh_token"
