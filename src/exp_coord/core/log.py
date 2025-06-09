@@ -1,7 +1,6 @@
-import inspect
 import logging
-import weakref
 
+import colorama
 import structlog
 
 __all__ = ["setup_logging"]
@@ -20,34 +19,105 @@ class LibraryLogFilter(logging.Filter):
         )
 
 
-_module_path_cache = weakref.WeakKeyDictionary()
+def add_callsite(_, __, event_dict: structlog.typing.EventDict) -> structlog.typing.EventDict:
+    """Add the callsite to the event dictionary.
 
-
-def add_module_path(_, __, event_dict):
-    """Add the module_path to the event dictionary.
-
-    !!! warning
-        This is not thread-safe because of the use of a WeakKeyDictionary. If
-        this becomes an issue, use a threading.RLock.
+    This processor depends on two processors:
+    1. structlog.stdlib.add_logger_name
+    2. structlog.processors.CallsiteParameterAdder with the two parameters FUNC_NAME and LINENO
     """
-    frame = inspect.currentframe()
-    while frame:
-        module = inspect.getmodule(frame)
-        if (
-            module
-            and not module.__name__.startswith(("structlog", "logging"))
-            and module.__name__ != "exp_coord.core.log"
-        ):
-            code = frame.f_code  # The function's code object, suitable for weak refs
-            if code in _module_path_cache:
-                event_dict["module"] = _module_path_cache[code]
-            else:
-                _module_path_cache[code] = module.__name__
-                event_dict["module"] = module.__name__
-            break
-        frame = frame.f_back
+    module = event_dict.pop("logger", "?")
+    func_name = event_dict.pop("func_name", "?")
+    lineno = event_dict.pop("lineno", "?")
 
+    event_dict["callsite"] = f"{module}:{func_name}:{lineno}"
     return event_dict
+
+
+SHARED_PROCESSORS = [
+    structlog.stdlib.add_log_level,
+    structlog.processors.TimeStamper(fmt="iso"),
+    structlog.stdlib.add_logger_name,
+    structlog.processors.CallsiteParameterAdder(
+        [
+            structlog.processors.CallsiteParameter.FUNC_NAME,
+            structlog.processors.CallsiteParameter.LINENO,
+        ]
+    ),
+    add_callsite,
+    structlog.processors.format_exc_info,
+]
+
+
+def _get_console_columns() -> list[structlog.dev.Column]:
+    """Build and return the list of columns for the console renderer."""
+    return [
+        structlog.dev.Column(
+            "timestamp",
+            structlog.dev.KeyValueColumnFormatter(
+                key_style=None,
+                value_style=colorama.Fore.BLACK,
+                reset_style=colorama.Style.RESET_ALL,
+                value_repr=str,
+            ),
+        ),
+        structlog.dev.Column(
+            "level",
+            structlog.dev.LogLevelColumnFormatter(
+                level_styles={
+                    "critical": colorama.Fore.RED,
+                    "exception": colorama.Fore.RED,
+                    "error": colorama.Fore.RED,
+                    "warn": colorama.Fore.YELLOW,
+                    "warning": colorama.Fore.YELLOW,
+                    "info": colorama.Fore.WHITE,
+                    "debug": colorama.Fore.BLUE,
+                },
+                reset_style=colorama.Style.RESET_ALL,
+            ),
+        ),
+        structlog.dev.Column(
+            "callsite",
+            structlog.dev.KeyValueColumnFormatter(
+                prefix="[",
+                postfix="]",
+                width=50,  # Maybe adjust, works for now
+                key_style=None,
+                value_style=colorama.Fore.GREEN,
+                reset_style=colorama.Style.RESET_ALL,
+                value_repr=str,
+            ),
+        ),
+        structlog.dev.Column(
+            "event",
+            structlog.dev.KeyValueColumnFormatter(
+                key_style=None,
+                value_style=colorama.Fore.WHITE + colorama.Style.BRIGHT,
+                reset_style=colorama.Style.RESET_ALL,
+                value_repr=str,
+            ),
+        ),
+        structlog.dev.Column(
+            "",
+            structlog.dev.KeyValueColumnFormatter(
+                key_style=colorama.Fore.CYAN,
+                value_style=colorama.Fore.GREEN,
+                reset_style=colorama.Style.RESET_ALL,
+                value_repr=str,
+            ),
+        ),
+    ]
+
+
+def _get_console_formatter() -> logging.Formatter:
+    """Build and return the console formatter with custom structlog columns."""
+    return structlog.stdlib.ProcessorFormatter(
+        foreign_pre_chain=SHARED_PROCESSORS,
+        processors=[
+            structlog.stdlib.ProcessorFormatter.remove_processors_meta,
+            structlog.dev.ConsoleRenderer(columns=_get_console_columns()),
+        ],
+    )
 
 
 def setup_logging():
@@ -55,37 +125,14 @@ def setup_logging():
 
     Reference: https://www.structlog.org/en/stable/standard-library.html#rendering-using-structlog-based-formatters-within-logging
     """
-    shared_processors = [
-        structlog.stdlib.add_log_level,
-        structlog.processors.TimeStamper(fmt="iso"),
-        add_module_path,
-        structlog.processors.CallsiteParameterAdder(
-            [
-                structlog.processors.CallsiteParameter.FUNC_NAME,
-                structlog.processors.CallsiteParameter.LINENO,
-            ]
-        ),
-        structlog.processors.format_exc_info,
-    ]
     structlog.configure(
-        processors=shared_processors + [structlog.stdlib.ProcessorFormatter.wrap_for_formatter],  # noqa: RUF005
+        processors=SHARED_PROCESSORS + [structlog.stdlib.ProcessorFormatter.wrap_for_formatter],  # noqa: RUF005
         logger_factory=structlog.stdlib.LoggerFactory(),
         cache_logger_on_first_use=True,
     )
 
-    formatter = structlog.stdlib.ProcessorFormatter(
-        # These run ONLY on `logging` entries that do NOT originate within
-        # structlog.
-        foreign_pre_chain=shared_processors,
-        # These run on ALL entries after the pre_chain is done.
-        processors=[
-            # Remove _record & _from_structlog.
-            structlog.stdlib.ProcessorFormatter.remove_processors_meta,
-            structlog.dev.ConsoleRenderer(),
-        ],
-    )
     handler = logging.StreamHandler()
-    handler.setFormatter(formatter)
+    handler.setFormatter(_get_console_formatter())
     handler.addFilter(LibraryLogFilter())
 
     root_logger = logging.getLogger()
