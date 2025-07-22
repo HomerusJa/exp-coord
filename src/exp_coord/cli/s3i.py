@@ -30,6 +30,15 @@ def async_command(func):
     return wrapper
 
 
+@app.command("get-token")
+@async_command
+async def get_token() -> None:
+    settings = get_settings().s3i
+    async with S3IConfigClient(settings) as client:
+        token = await client.auth.get_valid_token()
+    print(token)
+
+
 @message_app.command("get")
 @async_command
 async def get_message() -> None:

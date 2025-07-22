@@ -35,8 +35,21 @@ $ exp-coord s3i [OPTIONS] COMMAND [ARGS]...
 
 **Commands**:
 
+* `get-token`
 * `message`
 * `event`
+
+### `exp-coord s3i get-token`
+
+**Usage**:
+
+```console
+$ exp-coord s3i get-token [OPTIONS]
+```
+
+**Options**:
+
+* `--help`: Show this message and exit.
 
 ### `exp-coord s3i message`
 
