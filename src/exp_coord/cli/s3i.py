@@ -1,10 +1,8 @@
 """Contains subcommands for playing around with S3I."""
 
-import asyncio
-from functools import wraps
-
 import typer
 
+from exp_coord.cli.utils import async_command
 from exp_coord.core.config import get_settings
 from exp_coord.services.s3i import S3IBrokerClient
 from exp_coord.services.s3i.config import S3IConfigClient
@@ -15,19 +13,6 @@ event_app = typer.Typer(name="event")
 
 app.add_typer(message_app)
 app.add_typer(event_app)
-
-
-def async_command(func):
-    """Decorator to handle async commands."""
-
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        async def _run():
-            await func(*args, **kwargs)
-
-        asyncio.run(_run())
-
-    return wrapper
 
 
 @app.command("get-token")
