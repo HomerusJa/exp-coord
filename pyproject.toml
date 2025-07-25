@@ -129,5 +129,8 @@ directory = "htmlcov"
 include = [ "src", "tests" ]
 reportMissingTypeStubs = true
 
+venvPath = "."
+venv = ".venv"
+
 [tool.uv]
 default-groups = "all"
