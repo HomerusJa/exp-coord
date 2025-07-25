@@ -18,6 +18,7 @@ $ exp-coord [OPTIONS] COMMAND [ARGS]...
 
 * `s3i`: Play around with S3I.
 * `run`: Run the experiment coordinator, either...
+* `data`: Work with the experiment data.
 
 ## `exp-coord s3i`
 
@@ -312,4 +313,54 @@ $ exp-coord run forever [OPTIONS] COMMAND [ARGS]...
 
 * `--interval INTEGER`: [default: 60]
 * `--exit-on-failure / --no-exit-on-failure`: [default: exit-on-failure]
+* `--help`: Show this message and exit.
+
+## `exp-coord data`
+
+Work with the experiment data.
+
+**Usage**:
+
+```console
+$ exp-coord data [OPTIONS] COMMAND [ARGS]...
+```
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+**Commands**:
+
+* `images`
+
+### `exp-coord data images`
+
+**Usage**:
+
+```console
+$ exp-coord data images [OPTIONS] COMMAND [ARGS]...
+```
+
+**Options**:
+
+* `--help`: Show this message and exit.
+
+**Commands**:
+
+* `load-all`
+
+#### `exp-coord data images load-all`
+
+**Usage**:
+
+```console
+$ exp-coord data images load-all [OPTIONS] OUTPUT_DIR
+```
+
+**Arguments**:
+
+* `OUTPUT_DIR`: [required]
+
+**Options**:
+
 * `--help`: Show this message and exit.
